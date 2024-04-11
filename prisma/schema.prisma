@@ -1,0 +1,267 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+generator dbml {
+  provider = "prisma-dbml-generator"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model sys_captcha_log {
+  id         Int      @id @default(autoincrement())
+  user_id    Int?
+  account    String?  @db.VarChar(255)
+  code       String?  @db.VarChar(255)
+  provider   String?  @db.VarChar(255)
+  created_at DateTime @default(now()) @db.DateTime(6)
+  updated_at DateTime @default(now()) @db.DateTime(6)
+}
+
+model sys_config {
+  id         Int      @id @default(autoincrement())
+  key        String   @unique(map: "IDX_2c363c25cf99bcaab3a7f389ba") @db.VarChar(50)
+  name       String   @db.VarChar(50)
+  value      String?  @db.VarChar(255)
+  remark     String?  @db.VarChar(255)
+  created_at DateTime @default(now()) @db.DateTime(6)
+  updated_at DateTime @default(now()) @db.DateTime(6)
+}
+
+model sys_dept {
+  id             Int        @id @default(autoincrement())
+  name           String     @db.VarChar(255)
+  orderNo        Int?       @default(0)
+  mpath          String?    @default("") @db.VarChar(255)
+  parentId       Int?
+  created_at     DateTime   @default(now()) @db.DateTime(6)
+  updated_at     DateTime   @default(now()) @db.DateTime(6)
+  sys_dept       sys_dept?  @relation("sys_deptTosys_dept", fields: [parentId], references: [id], onUpdate: NoAction, map: "FK_c75280b01c49779f2323536db67")
+  other_sys_dept sys_dept[] @relation("sys_deptTosys_dept")
+  sys_user       sys_user[]
+
+  @@index([parentId], map: "FK_c75280b01c49779f2323536db67")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model sys_dict {
+  id         Int      @id @default(autoincrement())
+  created_at DateTime @default(now()) @db.DateTime(6)
+  updated_at DateTime @default(now()) @db.DateTime(6)
+  create_by  Int
+  update_by  Int
+  name       String   @unique(map: "IDX_d112365748f740ee260b65ce91") @db.VarChar(50)
+  status     Int      @default(1) @db.TinyInt
+  remark     String?  @db.VarChar(255)
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model sys_dict_item {
+  id            Int            @id @default(autoincrement())
+  created_at    DateTime       @default(now()) @db.DateTime(6)
+  updated_at    DateTime       @default(now()) @db.DateTime(6)
+  create_by     Int
+  update_by     Int
+  label         String         @db.VarChar(50)
+  value         String         @db.VarChar(50)
+  order         Int?
+  status        Int            @default(1) @db.TinyInt
+  remark        String?        @db.VarChar(255)
+  type_id       Int?
+  orderNo       Int?
+  sys_dict_type sys_dict_type? @relation(fields: [type_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "FK_d68ea74fcb041c8cfd1fd659844")
+
+  @@index([type_id], map: "FK_d68ea74fcb041c8cfd1fd659844")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model sys_dict_type {
+  id            Int             @id @default(autoincrement())
+  created_at    DateTime        @default(now()) @db.DateTime(6)
+  updated_at    DateTime        @default(now()) @db.DateTime(6)
+  create_by     Int
+  update_by     Int
+  name          String          @db.VarChar(50)
+  status        Int             @default(1) @db.TinyInt
+  remark        String?         @db.VarChar(255)
+  code          String          @unique(map: "IDX_74d0045ff7fab9f67adc0b1bda") @db.VarChar(50)
+  sys_dict_item sys_dict_item[]
+}
+
+model sys_login_log {
+  id         Int       @id @default(autoincrement())
+  ip         String?   @db.VarChar(255)
+  ua         String?   @db.VarChar(500)
+  address    String?   @db.VarChar(255)
+  provider   String?   @db.VarChar(255)
+  created_at DateTime  @default(now()) @db.DateTime(6)
+  updated_at DateTime  @default(now()) @db.DateTime(6)
+  user_id    Int?
+  sys_user   sys_user? @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "FK_3029712e0df6a28edaee46fd470")
+
+  @@index([user_id], map: "FK_3029712e0df6a28edaee46fd470")
+}
+
+model sys_menu {
+  id             Int              @id @default(autoincrement())
+  parent_id      Int?
+  path           String?          @db.VarChar(255)
+  name           String           @db.VarChar(255)
+  permission     String?          @db.VarChar(255)
+  type           Int              @default(0) @db.TinyInt
+  icon           String?          @default("") @db.VarChar(255)
+  order_no       Int?             @default(0)
+  component      String?          @db.VarChar(255)
+  keep_alive     Int              @default(1) @db.TinyInt
+  show           Int              @default(1) @db.TinyInt
+  status         Int              @default(1) @db.TinyInt
+  created_at     DateTime         @default(now()) @db.DateTime(6)
+  updated_at     DateTime         @default(now()) @db.DateTime(6)
+  is_ext         Int              @default(0) @db.TinyInt
+  ext_open_mode  Int              @default(1) @db.TinyInt
+  active_menu    String?          @db.VarChar(255)
+  sys_role_menus sys_role_menus[]
+}
+
+model sys_role {
+  id             Int              @id @default(autoincrement())
+  value          String           @unique(map: "IDX_05edc0a51f41bb16b7d8137da9") @db.VarChar(255)
+  name           String           @unique(map: "IDX_223de54d6badbe43a5490450c3") @db.VarChar(50)
+  remark         String?          @db.VarChar(255)
+  status         Int?             @default(1) @db.TinyInt
+  created_at     DateTime         @default(now()) @db.DateTime(6)
+  updated_at     DateTime         @default(now()) @db.DateTime(6)
+  default        Int?             @db.TinyInt
+  sys_role_menus sys_role_menus[]
+  sys_user_roles sys_user_roles[]
+}
+
+model sys_role_menus {
+  role_id  Int
+  menu_id  Int
+  sys_menu sys_menu @relation(fields: [menu_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "FK_2b95fdc95b329d66c18f5baed6d")
+  sys_role sys_role @relation(fields: [role_id], references: [id], onDelete: Cascade, map: "FK_35ce749b04d57e226d059e0f633")
+
+  @@id([role_id, menu_id])
+  @@index([menu_id], map: "IDX_2b95fdc95b329d66c18f5baed6")
+  @@index([role_id], map: "IDX_35ce749b04d57e226d059e0f63")
+}
+
+model sys_task {
+  id           Int            @id @default(autoincrement())
+  name         String         @unique(map: "IDX_ef8e5ab5ef2fe0ddb1428439ef") @db.VarChar(50)
+  service      String         @db.VarChar(255)
+  type         Int            @default(0) @db.TinyInt
+  status       Int            @default(1) @db.TinyInt
+  start_time   DateTime?      @db.DateTime(0)
+  end_time     DateTime?      @db.DateTime(0)
+  limit        Int?           @default(0)
+  cron         String?        @db.VarChar(255)
+  every        Int?
+  data         String?        @db.Text
+  job_opts     String?        @db.Text
+  remark       String?        @db.VarChar(255)
+  created_at   DateTime       @default(now()) @db.DateTime(6)
+  updated_at   DateTime       @default(now()) @db.DateTime(6)
+  sys_task_log sys_task_log[]
+}
+
+model sys_task_log {
+  id           Int       @id @default(autoincrement())
+  task_id      Int?
+  status       Int       @default(0) @db.TinyInt
+  detail       String?   @db.Text
+  consume_time Int?      @default(0)
+  created_at   DateTime  @default(now()) @db.DateTime(6)
+  updated_at   DateTime  @default(now()) @db.DateTime(6)
+  sys_task     sys_task? @relation(fields: [task_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_f4d9c36052fdb188ff5c089454b")
+
+  @@index([task_id], map: "FK_f4d9c36052fdb188ff5c089454b")
+}
+
+model sys_user {
+  id                 Int                  @id @default(autoincrement())
+  username           String               @unique(map: "IDX_9e7164b2f1ea1348bc0eb0a7da") @db.VarChar(255)
+  password           String               @db.VarChar(255)
+  avatar             String?              @db.VarChar(255)
+  email              String?              @db.VarChar(255)
+  phone              String?              @db.VarChar(255)
+  remark             String?              @db.VarChar(255)
+  psalt              String               @db.VarChar(32)
+  status             Int?                 @default(1) @db.TinyInt
+  qq                 String?              @db.VarChar(255)
+  created_at         DateTime             @default(now()) @db.DateTime(6)
+  updated_at         DateTime             @default(now()) @db.DateTime(6)
+  nickname           String?              @db.VarChar(255)
+  dept_id            Int?
+  sys_login_log      sys_login_log[]
+  sys_dept           sys_dept?            @relation(fields: [dept_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_96bde34263e2ae3b46f011124ac")
+  sys_user_roles     sys_user_roles[]
+  todo               todo[]
+  user_access_tokens user_access_tokens[]
+
+  @@index([dept_id], map: "FK_96bde34263e2ae3b46f011124ac")
+}
+
+model sys_user_roles {
+  user_id  Int
+  role_id  Int
+  sys_role sys_role @relation(fields: [role_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_6d61c5b3f76a3419d93a4216695")
+  sys_user sys_user @relation(fields: [user_id], references: [id], onDelete: Cascade, map: "FK_96311d970191a044ec048011f44")
+
+  @@id([user_id, role_id])
+  @@index([role_id], map: "IDX_6d61c5b3f76a3419d93a421669")
+  @@index([user_id], map: "IDX_96311d970191a044ec048011f4")
+}
+
+model todo {
+  id         Int       @id @default(autoincrement())
+  value      String    @db.VarChar(255)
+  user_id    Int?
+  status     Int       @default(0) @db.TinyInt
+  created_at DateTime  @default(now()) @db.DateTime(6)
+  updated_at DateTime  @default(now()) @db.DateTime(6)
+  sys_user   sys_user? @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_9cb7989853c4cb7fe427db4b260")
+
+  @@index([user_id], map: "FK_9cb7989853c4cb7fe427db4b260")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model tool_storage {
+  id         Int      @id @default(autoincrement())
+  created_at DateTime @default(now()) @db.DateTime(6)
+  updated_at DateTime @default(now()) @db.DateTime(6)
+  name       String   @db.VarChar(200)
+  fileName   String?  @db.VarChar(200)
+  ext_name   String?  @db.VarChar(255)
+  path       String   @db.VarChar(255)
+  type       String?  @db.VarChar(255)
+  size       String?  @db.VarChar(255)
+  user_id    Int?
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model user_access_tokens {
+  id                  String               @id @db.VarChar(36)
+  value               String               @db.VarChar(500)
+  expired_at          DateTime             @db.DateTime(0)
+  created_at          DateTime             @default(now()) @db.DateTime(6)
+  user_id             Int?
+  sys_user            sys_user?            @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "FK_e9d9d0c303432e4e5e48c1c3e90")
+  user_refresh_tokens user_refresh_tokens?
+
+  @@index([user_id], map: "FK_e9d9d0c303432e4e5e48c1c3e90")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model user_refresh_tokens {
+  id                 String              @id @db.VarChar(36)
+  value              String              @db.VarChar(500)
+  expired_at         DateTime            @db.DateTime(0)
+  created_at         DateTime            @default(now()) @db.DateTime(6)
+  accessTokenId      String?             @unique(map: "REL_1dfd080c2abf42198691b60ae3") @db.VarChar(36)
+  user_access_tokens user_access_tokens? @relation(fields: [accessTokenId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "FK_1dfd080c2abf42198691b60ae39")
+}
