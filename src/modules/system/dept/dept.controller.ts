@@ -18,7 +18,7 @@ export const permissions = definePermission('system:dept', {
   CREATE: 'create',
   READ: 'read',
   UPDATE: 'update',
-  DELETE: 'delete',
+  DELETE: 'delete'
 } as const)
 
 @ApiSecurityAuth()
@@ -31,8 +31,8 @@ export class DeptController {
   @ApiOperation({ summary: '获取部门列表' })
   @ApiResult({ type: [DeptEntity] })
   @Perm(permissions.LIST)
-  async list(@Query() dto: DeptQueryDto, @AuthUser('uid')uid: number): Promise<DeptEntity[]> {
-    return this.deptService.getDeptTree(uid, dto)
+  async list(@Query() dto: DeptQueryDto, @AuthUser('uid') uid: number): Promise<DeptEntity[]> {
+    return this.deptService.getDeptList(uid, dto)
   }
 
   @Post()
@@ -53,8 +53,9 @@ export class DeptController {
   @ApiOperation({ summary: '更新部门' })
   @Perm(permissions.UPDATE)
   async update(
-    @IdParam() id: number, @Body()
-updateDeptDto: DeptDto,
+    @IdParam() id: number,
+    @Body()
+    updateDeptDto: DeptDto
   ): Promise<void> {
     await this.deptService.update(id, updateDeptDto)
   }
@@ -65,20 +66,12 @@ updateDeptDto: DeptDto,
   async delete(@IdParam() id: number): Promise<void> {
     // 查询是否有关联用户或者部门，如果含有则无法删除
     const count = await this.deptService.countUserByDeptId(id)
-    if (count > 0)
-      throw new BusinessException(ErrorEnum.DEPARTMENT_HAS_ASSOCIATED_USERS)
+    if (count > 0) throw new BusinessException(ErrorEnum.DEPARTMENT_HAS_ASSOCIATED_USERS)
 
     const count2 = await this.deptService.countChildDept(id)
     console.log('count2', count2)
-    if (count2 > 0)
-      throw new BusinessException(ErrorEnum.DEPARTMENT_HAS_CHILD_DEPARTMENTS)
+    if (count2 > 0) throw new BusinessException(ErrorEnum.DEPARTMENT_HAS_CHILD_DEPARTMENTS)
 
     await this.deptService.delete(id)
   }
-
-  // @Post('move')
-  // @ApiOperation({ summary: '部门移动排序' })
-  // async move(@Body() dto: MoveDeptDto): Promise<void> {
-  //   await this.deptService.move(dto.depts);
-  // }
 }

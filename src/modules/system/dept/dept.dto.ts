@@ -8,7 +8,7 @@ import {
   IsString,
   Min,
   MinLength,
-  ValidateNested,
+  ValidateNested
 } from 'class-validator'
 
 export class DeptDto {
@@ -16,12 +16,6 @@ export class DeptDto {
   @IsString()
   @MinLength(1)
   name: string
-
-  @ApiProperty({ description: '父级部门id' })
-  @Type(() => Number)
-  @IsInt()
-  @IsOptional()
-  parentId: number
 
   @ApiProperty({ description: '排序编号', required: false })
   @IsInt()

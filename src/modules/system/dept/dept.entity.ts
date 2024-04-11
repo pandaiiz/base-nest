@@ -1,13 +1,5 @@
 import { ApiHideProperty, ApiProperty } from '@nestjs/swagger'
-import {
-  Column,
-  Entity,
-  OneToMany,
-  Relation,
-  Tree,
-  TreeChildren,
-  TreeParent,
-} from 'typeorm'
+import { Column, Entity, OneToMany, Relation, Tree } from 'typeorm'
 
 import { CommonEntity } from '~/common/entity/common.entity'
 
@@ -24,13 +16,11 @@ export class DeptEntity extends CommonEntity {
   @ApiProperty({ description: '排序' })
   orderNo: number
 
-  @TreeChildren({ cascade: true })
-  children: DeptEntity[]
-
-  @TreeParent({ onDelete: 'SET NULL' })
-  parent?: DeptEntity
+  @Column({ nullable: true, default: 0 })
+  @ApiProperty({ description: '父ID' })
+  parentId?: number
 
   @ApiHideProperty()
-  @OneToMany(() => UserEntity, user => user.dept)
+  @OneToMany(() => UserEntity, (user) => user.dept)
   users: Relation<UserEntity[]>
 }
