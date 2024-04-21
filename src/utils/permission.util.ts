@@ -28,6 +28,7 @@ export interface RouteRecordRaw {
 }
 
 function createRoute(menu: MenuEntity, _isRoot): RouteRecordRaw {
+  console.log(_isRoot, 'isRoot')
   const commonMeta: RouteRecordRaw['meta'] = {
     title: menu.name,
     icon: menu.icon,
@@ -38,7 +39,7 @@ function createRoute(menu: MenuEntity, _isRoot): RouteRecordRaw {
     show: menu.show,
     activeMenu: menu.activeMenu,
     status: menu.status,
-    keepAlive: menu.keepAlive,
+    keepAlive: menu.keepAlive
   }
 
   if (isExternal(menu.path)) {
@@ -47,7 +48,7 @@ function createRoute(menu: MenuEntity, _isRoot): RouteRecordRaw {
       path: menu.path,
       // component: 'IFrame',
       name: menu.name,
-      meta: { ...commonMeta },
+      meta: { ...commonMeta }
     }
   }
 
@@ -58,7 +59,7 @@ function createRoute(menu: MenuEntity, _isRoot): RouteRecordRaw {
       path: menu.path,
       component: menu.component,
       name: menu.name,
-      meta: { ...commonMeta },
+      meta: { ...commonMeta }
     }
   }
 
@@ -68,8 +69,8 @@ function createRoute(menu: MenuEntity, _isRoot): RouteRecordRaw {
     name: menu.name,
     component: menu.component,
     meta: {
-      ...commonMeta,
-    },
+      ...commonMeta
+    }
   }
 }
 
@@ -91,8 +92,7 @@ function filterAsyncRoutes(menus: MenuEntity[], parentRoute: MenuEntity): RouteR
     if (!parentRoute && !menu.parentId && menu.type === 1) {
       // 根菜单
       realRoute = createRoute(menu, true)
-    }
-    else if (!parentRoute && !menu.parentId && menu.type === 0) {
+    } else if (!parentRoute && !menu.parentId && menu.type === 0) {
       // 目录
       const childRoutes = filterAsyncRoutes(menus, menu)
       realRoute = createRoute(menu, true)
@@ -100,20 +100,10 @@ function filterAsyncRoutes(menus: MenuEntity[], parentRoute: MenuEntity): RouteR
         realRoute.redirect = genFullPath(childRoutes[0].path, realRoute.path)
         realRoute.children = childRoutes
       }
-    }
-    else if (
-      parentRoute
-      && parentRoute.id === menu.parentId
-      && menu.type === 1
-    ) {
+    } else if (parentRoute && parentRoute.id === menu.parentId && menu.type === 1) {
       // 子菜单
       realRoute = createRoute(menu, false)
-    }
-    else if (
-      parentRoute
-      && parentRoute.id === menu.parentId
-      && menu.type === 0
-    ) {
+    } else if (parentRoute && parentRoute.id === menu.parentId && menu.type === 0) {
       // 如果还是目录，继续递归
       const childRoutes = filterAsyncRoutes(menus, menu)
       realRoute = createRoute(menu, false)
@@ -123,8 +113,7 @@ function filterAsyncRoutes(menus: MenuEntity[], parentRoute: MenuEntity): RouteR
       }
     }
     // add curent route
-    if (realRoute)
-      res.push(realRoute)
+    if (realRoute) res.push(realRoute)
   })
   return res
 }
@@ -144,26 +133,22 @@ function filterMenuToTable(menus: MenuEntity[], parentMenu) {
       const childMenu = filterMenuToTable(menus, menu)
       realMenu = { ...menu }
       realMenu.children = childMenu
-    }
-    else if (!parentMenu && !menu.parentId && menu.type === 0) {
+    } else if (!parentMenu && !menu.parentId && menu.type === 0) {
       // 根目录
       const childMenu = filterMenuToTable(menus, menu)
       realMenu = { ...menu }
       realMenu.children = childMenu
-    }
-    else if (parentMenu && parentMenu.id === menu.parentId && menu.type === 1) {
+    } else if (parentMenu && parentMenu.id === menu.parentId && menu.type === 1) {
       // 子菜单下继续找是否有子菜单
       const childMenu = filterMenuToTable(menus, menu)
       realMenu = { ...menu }
       realMenu.children = childMenu
-    }
-    else if (parentMenu && parentMenu.id === menu.parentId && menu.type === 0) {
+    } else if (parentMenu && parentMenu.id === menu.parentId && menu.type === 0) {
       // 如果还是目录，继续递归
       const childMenu = filterMenuToTable(menus, menu)
       realMenu = { ...menu }
       realMenu.children = childMenu
-    }
-    else if (parentMenu && parentMenu.id === menu.parentId && menu.type === 2) {
+    } else if (parentMenu && parentMenu.id === menu.parentId && menu.type === 2) {
       realMenu = { ...menu }
     }
     // add curent route
@@ -181,6 +166,5 @@ export function generatorMenu(menu: MenuEntity[]) {
 
 /** 检测是否为演示环境, 如果为演示环境，则拒绝该操作 */
 export function checkIsDemoMode() {
-  if (envBoolean('IS_DEMO'))
-    throw new ForbiddenException('演示模式下不允许操作')
+  if (envBoolean('IS_DEMO')) throw new ForbiddenException('演示模式下不允许操作')
 }

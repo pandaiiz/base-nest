@@ -8,7 +8,12 @@ import { BusinessException } from '~/common/exceptions/biz.exception'
 
 import { AppConfig, IAppConfig, ISecurityConfig, SecurityConfig } from '~/config'
 import { ErrorEnum } from '~/constants/error-code.constant'
-import { genAuthPVKey, genAuthPermKey, genAuthTokenKey, genTokenBlacklistKey } from '~/helper/genRedisKey'
+import {
+  genAuthPVKey,
+  genAuthPermKey,
+  genAuthTokenKey,
+  genTokenBlacklistKey
+} from '~/helper/genRedisKey'
 
 import { UserService } from '~/modules/user/user.service'
 
@@ -30,21 +35,21 @@ export class AuthService {
     private loginLogService: LoginLogService,
     private tokenService: TokenService,
     @Inject(SecurityConfig.KEY) private securityConfig: ISecurityConfig,
-    @Inject(AppConfig.KEY) private appConfig: IAppConfig,
+    @Inject(AppConfig.KEY) private appConfig: IAppConfig
   ) {}
 
   async validateUser(credential: string, password: string): Promise<any> {
     const user = await this.userService.findUserByUserName(credential)
 
-    if (isEmpty(user))
-      throw new BusinessException(ErrorEnum.USER_NOT_FOUND)
+    if (isEmpty(user)) throw new BusinessException(ErrorEnum.USER_NOT_FOUND)
 
     const comparePassword = md5(`${password}${user.psalt}`)
     if (user.password !== comparePassword)
       throw new BusinessException(ErrorEnum.INVALID_USERNAME_PASSWORD)
 
     if (user) {
-      const { password, ...result } = user
+      const { ...result } = user
+      // const { password, ...result } = user
       return result
     }
 
@@ -55,15 +60,9 @@ export class AuthService {
    * 获取登录JWT
    * 返回null则账号密码有误，不存在该用户
    */
-  async login(
-    username: string,
-    password: string,
-    ip: string,
-    ua: string,
-  ): Promise<string> {
+  async login(username: string, password: string, ip: string, ua: string): Promise<string> {
     const user = await this.userService.findUserByUserName(username)
-    if (isEmpty(user))
-      throw new BusinessException(ErrorEnum.INVALID_USERNAME_PASSWORD)
+    if (isEmpty(user)) throw new BusinessException(ErrorEnum.INVALID_USERNAME_PASSWORD)
 
     const comparePassword = md5(`${password}${user.psalt}`)
     if (user.password !== comparePassword)
@@ -76,7 +75,12 @@ export class AuthService {
     // 包含access_token和refresh_token
     const token = await this.tokenService.generateAccessToken(user.id, roles)
 
-    await this.redis.set(genAuthTokenKey(user.id), token.accessToken, 'EX', this.securityConfig.jwtExprire)
+    await this.redis.set(
+      genAuthTokenKey(user.id),
+      token.accessToken,
+      'EX',
+      this.securityConfig.jwtExprire
+    )
 
     // 设置密码版本号 当密码修改时，版本号+1
     await this.redis.set(genAuthPVKey(user.id), 1)
@@ -118,12 +122,12 @@ export class AuthService {
    * 清除登录状态信息
    */
   async clearLoginStatus(user: IAuthUser, accessToken: string): Promise<void> {
-    const exp = user.exp ? (user.exp - Date.now() / 1000).toFixed(0) : this.securityConfig.jwtExprire
+    const exp = user.exp
+      ? (user.exp - Date.now() / 1000).toFixed(0)
+      : this.securityConfig.jwtExprire
     await this.redis.set(genTokenBlacklistKey(accessToken), accessToken, 'EX', exp)
-    if (this.appConfig.multiDeviceLogin)
-      await this.tokenService.removeAccessToken(accessToken)
-    else
-      await this.userService.forbidden(user.uid, accessToken)
+    if (this.appConfig.multiDeviceLogin) await this.tokenService.removeAccessToken(accessToken)
+    else await this.userService.forbidden(user.uid, accessToken)
   }
 
   /**

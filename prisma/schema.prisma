@@ -1,238 +1,168 @@
+datasource database {
+  provider     = "postgresql"
+  url          = env("PG_DATABASE_URL")
+  relationMode = "prisma"
+}
+
 generator client {
   provider = "prisma-client-js"
 }
 
-datasource db {
-  provider     = "mysql"
-  url          = env("DATABASE_URL")
-  relationMode = "prisma"
+enum Status {
+  PENDING
+  LIVE
+  DELETED
+  REMOVED
 }
 
-model sys_captcha_log {
-  id         Int      @id @default(autoincrement())
-  user_id    Int?
-  account    String?  @db.VarChar(255)
-  code       String?  @db.VarChar(255)
-  provider   String?  @db.VarChar(255)
-  created_at DateTime @default(now()) @db.DateTime(6)
-  updated_at DateTime @default(now()) @db.DateTime(6)
+enum UserRole {
+  MEMBER
+  ADMIN
+
+  @@map("userRole")
 }
 
-model sys_config {
-  id         Int      @id @default(autoincrement())
-  key        String   @unique(map: "IDX_2c363c25cf99bcaab3a7f389ba") @db.VarChar(50)
-  name       String   @db.VarChar(50)
-  value      String?  @db.VarChar(255)
-  remark     String?  @db.VarChar(255)
-  created_at DateTime @default(now()) @db.DateTime(6)
-  updated_at DateTime @default(now()) @db.DateTime(6)
+model Menu {
+  id          Int      @id @default(autoincrement())
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  parentId    Int?     @map("parent_id")
+  name        String
+  path        String?
+  permission  String?
+  type        Int?     @default(0)
+  icon        String?
+  sort        Int?     @default(0)
+  component   String?
+  isExt       Boolean  @default(false) @map("is_ext")
+  extOpenMode Int      @default(1) @map("ext_open_mode")
+  keepAlive   Int      @default(1) @map("keep_alive")
+  show        Int      @default(1)
+  activeMenu  String?  @map("active_menu")
+  status      Int      @default(1)
+  // 角色
+  roles       Role[]   @relation("sys_menu_role")
+
+  @@map("sys_menu")
+}
+
+model Role {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  // 角色名
+  name      String   @unique @database.VarChar(50)
+  // 角色标识
+  value     String   @unique
+  // 角色描述
+  remark    String?
+  // 状态：1启用，0禁用
+  status    Int?     @default(1)
+  // 是否默认用户
+  default   Boolean? @default(false)
+  // 菜单
+  menus     Menu[]   @relation("sys_menu_role")
+  // 用户
+  users     User[]   @relation("sys_user_role")
+
+  @@map("sys_role")
 }
 
 model Dept {
-  id         Int      @id @default(autoincrement())
-  name       String   @db.VarChar(255)
-  orderNo    Int?     @default(0)
-  created_at DateTime @default(now()) @db.DateTime(6)
-  updated_at DateTime @default(now()) @db.DateTime(6)
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  // 部门名称
+  name      String
+  sort      Int?     @default(0)
+  // 父ID
+  parentId  Int?     @default(0)
+  // 用户列表
+  users     User[]
 
   @@map("sys_dept")
 }
 
-/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
-model sys_dict {
-  id         Int      @id @default(autoincrement())
-  created_at DateTime @default(now()) @db.DateTime(6)
-  updated_at DateTime @default(now()) @db.DateTime(6)
-  create_by  Int
-  update_by  Int
-  name       String   @unique(map: "IDX_d112365748f740ee260b65ce91") @db.VarChar(50)
-  status     Int      @default(1) @db.TinyInt
-  remark     String?  @db.VarChar(255)
+model LoginLog {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  // IP
+  ip        String?
+  // 地址
+  address   String?
+  // 登录方式
+  provider  String?
+  // 浏览器ua
+  ua        String?  @database.VarChar(500)
+  // 用户
+  user      User?    @relation(fields: [userId], references: [id])
+  // 用户ID
+  userId    Int?     @map("user_id")
+
+  @@index([userId])
+  @@map("sys_login_log")
 }
 
-/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
-model sys_dict_item {
-  id         Int      @id @default(autoincrement())
-  created_at DateTime @default(now()) @db.DateTime(6)
-  updated_at DateTime @default(now()) @db.DateTime(6)
-  create_by  Int
-  update_by  Int
-  label      String   @db.VarChar(50)
-  value      String   @db.VarChar(50)
-  order      Int?
-  status     Int      @default(1) @db.TinyInt
-  remark     String?  @db.VarChar(255)
-  type_id    Int?
-  orderNo    Int?
+model User {
+  id           Int           @id @default(autoincrement())
+  createdAt    DateTime      @default(now()) @map("created_at")
+  updatedAt    DateTime      @updatedAt @map("updated_at")
+  username     String        @unique
+  password     String
+  psalt        String        @database.VarChar(32)
+  nickname     String?
+  avatar       String?
+  qq           String?
+  email        String?
+  phone        String?
+  remark       String?
+  status       Int?          @default(1)
+  icon         String?
+  sort         Int?          @default(0)
+  path         String?
+  component    String?
+  dept         Dept?         @relation(fields: [deptId], references: [id])
+  deptId       Int?          @map("dept_id")
+  // 角色
+  roles        Role[]        @relation("sys_user_role")
+  // Token
+  accessTokens AccessToken[]
+  // LoginLogs
+  loginLogs    LoginLog[]
 
-  @@index([type_id], map: "FK_d68ea74fcb041c8cfd1fd659844")
+  @@index([deptId])
+  @@map("sys_user")
 }
 
-/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
-model sys_dict_type {
-  id         Int      @id @default(autoincrement())
-  created_at DateTime @default(now()) @db.DateTime(6)
-  updated_at DateTime @default(now()) @db.DateTime(6)
-  create_by  Int
-  update_by  Int
-  name       String   @db.VarChar(50)
-  status     Int      @default(1) @db.TinyInt
-  remark     String?  @db.VarChar(255)
-  code       String   @unique(map: "IDX_74d0045ff7fab9f67adc0b1bda") @db.VarChar(50)
+model RefreshToken {
+  id            String      @id @default(uuid()) @database.Uuid
+  createdAt     DateTime    @default(now()) @map("created_at")
+  updatedAt     DateTime    @updatedAt @map("updated_at")
+  value         String      @database.VarChar(500)
+  // 令牌过期时间
+  expiredAt     DateTime    @map("expired_at")
+  // 刷新令牌
+  accessToken   AccessToken @relation(fields: [accessTokenId], references: [id])
+  // 刷新令牌ID
+  accessTokenId String      @unique @map("access_token_id")
+
+  @@map("user_refresh_tokens")
 }
 
-model sys_login_log {
-  id         Int      @id @default(autoincrement())
-  ip         String?  @db.VarChar(255)
-  ua         String?  @db.VarChar(500)
-  address    String?  @db.VarChar(255)
-  provider   String?  @db.VarChar(255)
-  created_at DateTime @default(now()) @db.DateTime(6)
-  updated_at DateTime @default(now()) @db.DateTime(6)
-  user_id    Int?
+model AccessToken {
+  id           String        @id @default(uuid()) @database.Uuid
+  createdAt    DateTime      @default(now()) @map("created_at")
+  updatedAt    DateTime      @updatedAt @map("updated_at")
+  value        String        @database.VarChar(500)
+  // 令牌过期时间
+  expiredAt    DateTime      @map("expired_at")
+  // 用户
+  user         User          @relation(fields: [userId], references: [id])
+  // 用户ID
+  userId       Int           @map("user_id")
+  refreshToken RefreshToken?
 
-  @@index([user_id], map: "FK_3029712e0df6a28edaee46fd470")
-}
-
-model sys_menu {
-  id            Int      @id @default(autoincrement())
-  parent_id     Int?
-  path          String?  @db.VarChar(255)
-  name          String   @db.VarChar(255)
-  permission    String?  @db.VarChar(255)
-  type          Int      @default(0) @db.TinyInt
-  icon          String?  @default("") @db.VarChar(255)
-  order_no      Int?     @default(0)
-  component     String?  @db.VarChar(255)
-  keep_alive    Int      @default(1) @db.TinyInt
-  show          Int      @default(1) @db.TinyInt
-  status        Int      @default(1) @db.TinyInt
-  created_at    DateTime @default(now()) @db.DateTime(6)
-  updated_at    DateTime @default(now()) @db.DateTime(6)
-  is_ext        Int      @default(0) @db.TinyInt
-  ext_open_mode Int      @default(1) @db.TinyInt
-  active_menu   String?  @db.VarChar(255)
-}
-
-model sys_role {
-  id         Int      @id @default(autoincrement())
-  value      String   @unique(map: "IDX_05edc0a51f41bb16b7d8137da9") @db.VarChar(255)
-  name       String   @unique(map: "IDX_223de54d6badbe43a5490450c3") @db.VarChar(50)
-  remark     String?  @db.VarChar(255)
-  status     Int?     @default(1) @db.TinyInt
-  created_at DateTime @default(now()) @db.DateTime(6)
-  updated_at DateTime @default(now()) @db.DateTime(6)
-  default    Int?     @db.TinyInt
-}
-
-model sys_role_menus {
-  role_id Int
-  menu_id Int
-
-  @@id([role_id, menu_id])
-  @@index([menu_id], map: "IDX_2b95fdc95b329d66c18f5baed6")
-  @@index([role_id], map: "IDX_35ce749b04d57e226d059e0f63")
-}
-
-model sys_task {
-  id         Int       @id @default(autoincrement())
-  name       String    @unique(map: "IDX_ef8e5ab5ef2fe0ddb1428439ef") @db.VarChar(50)
-  service    String    @db.VarChar(255)
-  type       Int       @default(0) @db.TinyInt
-  status     Int       @default(1) @db.TinyInt
-  start_time DateTime? @db.DateTime(0)
-  end_time   DateTime? @db.DateTime(0)
-  limit      Int?      @default(0)
-  cron       String?   @db.VarChar(255)
-  every      Int?
-  data       String?   @db.Text
-  job_opts   String?   @db.Text
-  remark     String?   @db.VarChar(255)
-  created_at DateTime  @default(now()) @db.DateTime(6)
-  updated_at DateTime  @default(now()) @db.DateTime(6)
-}
-
-model sys_task_log {
-  id           Int      @id @default(autoincrement())
-  task_id      Int?
-  status       Int      @default(0) @db.TinyInt
-  detail       String?  @db.Text
-  consume_time Int?     @default(0)
-  created_at   DateTime @default(now()) @db.DateTime(6)
-  updated_at   DateTime @default(now()) @db.DateTime(6)
-
-  @@index([task_id], map: "FK_f4d9c36052fdb188ff5c089454b")
-}
-
-model sys_user {
-  id         Int      @id @default(autoincrement())
-  username   String   @unique(map: "IDX_9e7164b2f1ea1348bc0eb0a7da") @db.VarChar(255)
-  password   String   @db.VarChar(255)
-  avatar     String?  @db.VarChar(255)
-  email      String?  @db.VarChar(255)
-  phone      String?  @db.VarChar(255)
-  remark     String?  @db.VarChar(255)
-  psalt      String   @db.VarChar(32)
-  status     Int?     @default(1) @db.TinyInt
-  qq         String?  @db.VarChar(255)
-  created_at DateTime @default(now()) @db.DateTime(6)
-  updated_at DateTime @default(now()) @db.DateTime(6)
-  nickname   String?  @db.VarChar(255)
-  dept_id    Int?
-
-  @@index([dept_id], map: "FK_96bde34263e2ae3b46f011124ac")
-}
-
-model sys_user_roles {
-  user_id Int
-  role_id Int
-
-  @@id([user_id, role_id])
-  @@index([role_id], map: "IDX_6d61c5b3f76a3419d93a421669")
-  @@index([user_id], map: "IDX_96311d970191a044ec048011f4")
-}
-
-model todo {
-  id         Int      @id @default(autoincrement())
-  value      String   @db.VarChar(255)
-  user_id    Int?
-  status     Int      @default(0) @db.TinyInt
-  created_at DateTime @default(now()) @db.DateTime(6)
-  updated_at DateTime @default(now()) @db.DateTime(6)
-
-  @@index([user_id], map: "FK_9cb7989853c4cb7fe427db4b260")
-}
-
-/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
-model tool_storage {
-  id         Int      @id @default(autoincrement())
-  created_at DateTime @default(now()) @db.DateTime(6)
-  updated_at DateTime @default(now()) @db.DateTime(6)
-  name       String   @db.VarChar(200)
-  fileName   String?  @db.VarChar(200)
-  ext_name   String?  @db.VarChar(255)
-  path       String   @db.VarChar(255)
-  type       String?  @db.VarChar(255)
-  size       String?  @db.VarChar(255)
-  user_id    Int?
-}
-
-/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
-model user_access_tokens {
-  id         String   @id @db.VarChar(36)
-  value      String   @db.VarChar(500)
-  expired_at DateTime @db.DateTime(0)
-  created_at DateTime @default(now()) @db.DateTime(6)
-  user_id    Int?
-
-  @@index([user_id], map: "FK_e9d9d0c303432e4e5e48c1c3e90")
-}
-
-/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
-model user_refresh_tokens {
-  id            String   @id @db.VarChar(36)
-  value         String   @db.VarChar(500)
-  expired_at    DateTime @db.DateTime(0)
-  created_at    DateTime @default(now()) @db.DateTime(6)
-  accessTokenId String?  @unique(map: "REL_1dfd080c2abf42198691b60ae3") @db.VarChar(36)
+  @@index([userId])
+  @@map("user_access_tokens")
 }

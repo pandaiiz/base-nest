@@ -15,8 +15,8 @@ export const AppConfig = registerAs(appRegToken, () => ({
 
   logger: {
     level: env('LOGGER_LEVEL'),
-    maxFiles: envNumber('LOGGER_MAX_FILES'),
-  },
+    maxFiles: envNumber('LOGGER_MAX_FILES')
+  }
 }))
 
 export type IAppConfig = ConfigType<typeof AppConfig>

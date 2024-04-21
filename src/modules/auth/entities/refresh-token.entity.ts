@@ -5,7 +5,7 @@ import {
   Entity,
   JoinColumn,
   OneToOne,
-  PrimaryGeneratedColumn,
+  PrimaryGeneratedColumn
 } from 'typeorm'
 
 import { AccessTokenEntity } from './access-token.entity'
@@ -24,8 +24,8 @@ export class RefreshTokenEntity extends BaseEntity {
   @CreateDateColumn({ comment: '令牌创建时间' })
   created_at!: Date
 
-  @OneToOne(() => AccessTokenEntity, accessToken => accessToken.refreshToken, {
-    onDelete: 'CASCADE',
+  @OneToOne(() => AccessTokenEntity, (accessToken) => accessToken.refreshToken, {
+    onDelete: 'CASCADE'
   })
   @JoinColumn()
   accessToken!: AccessTokenEntity

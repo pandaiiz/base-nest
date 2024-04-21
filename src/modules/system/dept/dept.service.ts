@@ -79,7 +79,7 @@ export class DeptService {
         }
       },
       orderBy: {
-        orderNo: 'asc'
+        sort: 'asc'
       }
     })
   }

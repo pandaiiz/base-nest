@@ -11,6 +11,7 @@ import { MenuEntity } from '~/modules/system/menu/menu.entity'
 import { RoleEntity } from '~/modules/system/role/role.entity'
 
 import { RoleDto, RoleUpdateDto } from './role.dto'
+import { PrismaService } from 'nestjs-prisma'
 
 @Injectable()
 export class RoleService {
@@ -20,15 +21,13 @@ export class RoleService {
     @InjectRepository(MenuEntity)
     private menuRepository: Repository<MenuEntity>,
     @InjectEntityManager() private entityManager: EntityManager,
+    private prisma: PrismaService
   ) {}
 
   /**
    * 列举所有角色：除去超级管理员
    */
-  async findAll({
-    page,
-    pageSize,
-  }: PagerDto): Promise<Pagination<RoleEntity>> {
+  async findAll({ page, pageSize }: PagerDto): Promise<Pagination<RoleEntity>> {
     return paginate(this.roleRepository, { page, pageSize })
   }
 
@@ -39,21 +38,20 @@ export class RoleService {
     const info = await this.roleRepository
       .createQueryBuilder('role')
       .where({
-        id,
+        id
       })
       .getOne()
 
     const menus = await this.menuRepository.find({
       where: { roles: { id } },
-      select: ['id'],
+      select: ['id']
     })
 
-    return { ...info, menuIds: menus.map(m => m.id) }
+    return { ...info, menuIds: menus.map((m) => m.id) }
   }
 
   async delete(id: number): Promise<void> {
-    if (id === ROOT_ROLE_ID)
-      throw new Error('不能删除超级管理员')
+    if (id === ROOT_ROLE_ID) throw new Error('不能删除超级管理员')
     await this.roleRepository.delete(id)
   }
 
@@ -63,9 +61,7 @@ export class RoleService {
   async create({ menuIds, ...data }: RoleDto): Promise<{ roleId: number }> {
     const role = await this.roleRepository.save({
       ...data,
-      menus: menuIds
-        ? await this.menuRepository.findBy({ id: In(menuIds) })
-        : [],
+      menus: menuIds ? await this.menuRepository.findBy({ id: In(menuIds) }) : []
     })
 
     return { roleId: role.id }
@@ -81,7 +77,7 @@ export class RoleService {
       // using transaction
       await this.entityManager.transaction(async (manager) => {
         const menus = await this.menuRepository.find({
-          where: { id: In(menuIds) },
+          where: { id: In(menuIds) }
         })
 
         const role = await this.roleRepository.findOne({ where: { id } })
@@ -95,37 +91,40 @@ export class RoleService {
    * 根据用户id查找角色信息
    */
   async getRoleIdsByUser(id: number): Promise<number[]> {
-    const roles = await this.roleRepository.find({
+    const roles = await this.prisma.role.findMany({
       where: {
-        users: { id },
-      },
+        users: {
+          some: {
+            id
+          }
+        }
+      }
     })
-
-    if (!isEmpty(roles))
-      return roles.map(r => r.id)
-
+    if (!isEmpty(roles)) return roles.map((r) => r.id)
     return []
   }
 
   async getRoleValues(ids: number[]): Promise<string[]> {
     return (
-      await this.roleRepository.findBy({
-        id: In(ids),
+      await this.prisma.role.findMany({
+        where: {
+          id: {
+            in: ids
+          }
+        }
       })
-    ).map(r => r.value)
+    ).map((r) => r.value)
   }
 
   async isAdminRoleByUser(uid: number): Promise<boolean> {
     const roles = await this.roleRepository.find({
       where: {
-        users: { id: uid },
-      },
+        users: { id: uid }
+      }
     })
 
     if (!isEmpty(roles)) {
-      return roles.some(
-        r => r.id === ROOT_ROLE_ID,
-      )
+      return roles.some((r) => r.id === ROOT_ROLE_ID)
     }
     return false
   }
@@ -141,9 +140,9 @@ export class RoleService {
     return this.roleRepository.exist({
       where: {
         users: {
-          roles: { id },
-        },
-      },
+          roles: { id }
+        }
+      }
     })
   }
 }

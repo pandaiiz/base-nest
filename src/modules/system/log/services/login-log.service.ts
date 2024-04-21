@@ -12,6 +12,7 @@ import { getIpAddress } from '~/utils/ip.util'
 import { LoginLogQueryDto } from '../dto/log.dto'
 import { LoginLogEntity } from '../entities/login-log.entity'
 import { LoginLogInfo } from '../models/log.model'
+import { PrismaService } from 'nestjs-prisma'
 
 async function parseLoginLog(e: any, parser: UAParser): Promise<LoginLogInfo> {
   const uaResult = parser.setUA(e.login_log_ua).getResult()
@@ -23,7 +24,7 @@ async function parseLoginLog(e: any, parser: UAParser): Promise<LoginLogInfo> {
     os: `${`${uaResult.os.name ?? ''} `}${uaResult.os.version}`,
     browser: `${`${uaResult.browser.name ?? ''} `}${uaResult.browser.version}`,
     username: e.user_username,
-    time: e.login_log_created_at,
+    time: e.login_log_created_at
   }
 }
 
@@ -32,33 +33,26 @@ export class LoginLogService {
   constructor(
     @InjectRepository(LoginLogEntity)
     private loginLogRepository: Repository<LoginLogEntity>,
-
+    private prisma: PrismaService
   ) {}
 
   async create(uid: number, ip: string, ua: string): Promise<void> {
     try {
       const address = await getIpAddress(ip)
-
-      await this.loginLogRepository.save({
-        ip,
-        ua,
-        address,
-        user: { id: uid },
+      await this.prisma.loginLog.create({
+        data: {
+          ip,
+          ua,
+          address,
+          user: { connect: { id: uid } }
+        }
       })
-    }
-    catch (e) {
+    } catch (e) {
       console.error(e)
     }
   }
 
-  async list({
-    page,
-    pageSize,
-    username,
-    ip,
-    address,
-    time,
-  }: LoginLogQueryDto) {
+  async list({ page, pageSize, username, ip, address, time }: LoginLogQueryDto) {
     const queryBuilder = await this.loginLogRepository
       .createQueryBuilder('login_log')
       .innerJoinAndSelect('login_log.user', 'user')
@@ -68,25 +62,23 @@ export class LoginLogService {
         ...(time && { createdAt: Between(time[0], time[1]) }),
         ...(username && {
           user: {
-            username: Like(`%${username}%`),
-          },
-        }),
+            username: Like(`%${username}%`)
+          }
+        })
       })
       .orderBy('login_log.created_at', 'DESC')
 
     const { items, ...rest } = await paginateRaw<LoginLogEntity>(queryBuilder, {
       page,
-      pageSize,
+      pageSize
     })
 
     const parser = new UAParser()
-    const loginLogInfos = await Promise.all(
-      items.map(item => parseLoginLog(item, parser)),
-    )
+    const loginLogInfos = await Promise.all(items.map((item) => parseLoginLog(item, parser)))
 
     return {
       items: loginLogInfos,
-      ...rest,
+      ...rest
     }
   }
 

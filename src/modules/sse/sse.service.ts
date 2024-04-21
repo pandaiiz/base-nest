@@ -26,9 +26,8 @@ export class SseService {
   /** 移除与关闭指定端的用户(允许多端登录时的情况) */
   removeClient(uid: number, subscriber: Subscriber<MessageEvent>): void {
     const clients = clientMap.get(uid)
-    const targetIndex = clients?.findIndex(client => client === subscriber)
-    if (targetIndex !== -1)
-      clients?.splice(targetIndex, 1).at(0)?.complete()
+    const targetIndex = clients?.findIndex((client) => client === subscriber)
+    if (targetIndex !== -1) clients?.splice(targetIndex, 1).at(0)?.complete()
   }
 
   /** 移除与关闭指定用户的连接 */
@@ -74,11 +73,11 @@ export class SseService {
     const roleMenus = await RoleEntity.find({
       where: {
         menus: {
-          id: In(menuIds),
-        },
-      },
+          id: In(menuIds)
+        }
+      }
     })
-    const roleIds = roleMenus.map(n => n.id).concat(ROOT_ROLE_ID)
+    const roleIds = roleMenus.map((n) => n.id).concat(ROOT_ROLE_ID)
     await this.noticeClientToUpdateMenusByRoleIds(roleIds)
   }
 
@@ -89,12 +88,12 @@ export class SseService {
     const users = await UserEntity.find({
       where: {
         roles: {
-          id: In(roleIds),
-        },
-      },
+          id: In(roleIds)
+        }
+      }
     })
     if (users) {
-      const userIds = users.map(n => n.id)
+      const userIds = users.map((n) => n.id)
       await this.noticeClientToUpdateMenusByUserIds(userIds)
     }
   }

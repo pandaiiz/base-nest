@@ -7,7 +7,7 @@ import {
   IsString,
   Min,
   MinLength,
-  ValidateIf,
+  ValidateIf
 } from 'class-validator'
 
 export class MenuDto {
@@ -27,15 +27,15 @@ export class MenuDto {
   @ApiProperty({ description: '排序' })
   @IsInt()
   @Min(0)
-  orderNo: number
+  sort: number
 
   @ApiProperty({ description: '前端路由地址' })
   // @Matches(/^[/]$/)
-  @ValidateIf(o => o.type !== 2)
+  @ValidateIf((o) => o.type !== 2)
   path: string
 
   @ApiProperty({ description: '是否外链', default: false })
-  @ValidateIf(o => o.type !== 2)
+  @ValidateIf((o) => o.type !== 2)
   @IsBoolean()
   isExt: boolean
 

@@ -19,19 +19,18 @@ import { LoginToken } from './models/auth.model'
 export class AuthController {
   constructor(
     private authService: AuthService,
-    private userService: UserService,
+    private userService: UserService
   ) {}
 
   @Post('login')
   @ApiOperation({ summary: '登录' })
   @ApiResult({ type: LoginToken })
-  async login(@Body() dto: LoginDto, @Ip()ip: string, @Headers('user-agent')ua: string): Promise<LoginToken> {
-    const token = await this.authService.login(
-      dto.username,
-      dto.password,
-      ip,
-      ua,
-    )
+  async login(
+    @Body() dto: LoginDto,
+    @Ip() ip: string,
+    @Headers('user-agent') ua: string
+  ): Promise<LoginToken> {
+    const token = await this.authService.login(dto.username, dto.password, ip, ua)
     return { token }
   }
 

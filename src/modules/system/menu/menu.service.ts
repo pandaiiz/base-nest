@@ -4,7 +4,7 @@ import { InjectRepository } from '@nestjs/typeorm'
 import Redis from 'ioredis'
 import { concat, isEmpty, uniq } from 'lodash'
 
-import { In, IsNull, Like, Not, Repository } from 'typeorm'
+import { Like, Repository } from 'typeorm'
 
 import { BusinessException } from '~/common/exceptions/biz.exception'
 import { RedisKeys } from '~/constants/cache.constant'
@@ -18,6 +18,7 @@ import { deleteEmptyChildren, generatorMenu, generatorRouters } from '~/utils'
 import { RoleService } from '../role/role.service'
 
 import { MenuDto, MenuQueryDto, MenuUpdateDto } from './menu.dto'
+import { PrismaService } from 'nestjs-prisma'
 
 @Injectable()
 export class MenuService {
@@ -27,27 +28,22 @@ export class MenuService {
     private menuRepository: Repository<MenuEntity>,
     private roleService: RoleService,
     private sseService: SseService,
+    private prisma: PrismaService
   ) {}
 
   /**
    * 获取所有菜单以及权限
    */
-  async list({
-    name,
-    path,
-    permission,
-    component,
-    status,
-  }: MenuQueryDto): Promise<MenuEntity[]> {
+  async list({ name, path, permission, component, status }: MenuQueryDto): Promise<MenuEntity[]> {
     const menus = await this.menuRepository.find({
       where: {
         ...(name && { name: Like(`%${name}%`) }),
         ...(path && { path: Like(`%${path}%`) }),
         ...(permission && { permission: Like(`%${permission}%`) }),
         ...(component && { component: Like(`%${component}%`) }),
-        ...(status && { status }),
+        ...(status && { status })
       },
-      order: { orderNo: 'ASC' },
+      order: { orderNo: 'ASC' }
     })
     const menuList = generatorMenu(menus)
 
@@ -60,12 +56,18 @@ export class MenuService {
   }
 
   async create(menu: MenuDto): Promise<void> {
-    const result = await this.menuRepository.save(menu)
+    console.log(menu)
+    const result = await this.prisma.menu.create({
+      data: menu
+    })
     this.sseService.noticeClientToUpdateMenusByMenuIds([result.id])
   }
 
   async update(id: number, menu: MenuUpdateDto): Promise<void> {
-    await this.menuRepository.update(id, menu)
+    await this.prisma.menu.update({
+      where: { id },
+      data: menu
+    })
     this.sseService.noticeClientToUpdateMenusByMenuIds([id])
   }
 
@@ -74,15 +76,18 @@ export class MenuService {
    */
   async getMenus(uid: number) {
     const roleIds = await this.roleService.getRoleIdsByUser(uid)
-    let menus: MenuEntity[] = []
+    let menus: any[] = []
+    // let menus: MenuEntity[] = []
 
-    if (isEmpty(roleIds))
-      return generatorRouters([])
+    if (isEmpty(roleIds)) return generatorRouters([])
 
     if (this.roleService.hasAdminRole(roleIds)) {
-      menus = await this.menuRepository.find({ order: { orderNo: 'ASC' } })
-    }
-    else {
+      menus = await this.prisma.menu.findMany({
+        orderBy: {
+          sort: 'asc'
+        }
+      })
+    } else {
       menus = await this.menuRepository
         .createQueryBuilder('menu')
         .innerJoinAndSelect('menu.roles', 'role')
@@ -105,14 +110,11 @@ export class MenuService {
     }
     if (dto.type === 1 && dto.parentId) {
       const parent = await this.getMenuItemInfo(dto.parentId)
-      if (isEmpty(parent))
-        throw new BusinessException(ErrorEnum.PARENT_MENU_NOT_FOUND)
+      if (isEmpty(parent)) throw new BusinessException(ErrorEnum.PARENT_MENU_NOT_FOUND)
 
       if (parent && parent.type === 1) {
         // 当前新增为菜单但父节点也为菜单时为非法操作
-        throw new BusinessException(
-          ErrorEnum.ILLEGAL_OPERATION_DIRECTORY_PARENT,
-        )
+        throw new BusinessException(ErrorEnum.ILLEGAL_OPERATION_DIRECTORY_PARENT)
       }
     }
   }
@@ -122,7 +124,11 @@ export class MenuService {
    */
   async findChildMenus(mid: number): Promise<any> {
     const allMenus: any = []
-    const menus = await this.menuRepository.findBy({ parentId: mid })
+    const menus = await this.prisma.menu.findMany({
+      where: {
+        parentId: mid
+      }
+    })
     // if (_.isEmpty(menus)) {
     //   return allMenus;
     // }
@@ -142,19 +148,18 @@ export class MenuService {
    * 获取某个菜单的信息
    * @param mid menu id
    */
-  async getMenuItemInfo(mid: number): Promise<MenuEntity> {
-    const menu = await this.menuRepository.findOneBy({ id: mid })
-    return menu
+  async getMenuItemInfo(mid: number): Promise<any> {
+    return this.prisma.menu.findUnique({ where: { id: mid } })
   }
 
   /**
    * 获取某个菜单以及关联的父菜单的信息
    */
   async getMenuItemAndParentInfo(mid: number) {
-    const menu = await this.menuRepository.findOneBy({ id: mid })
-    let parentMenu: MenuEntity | undefined
+    const menu = await this.prisma.menu.findUnique({ where: { id: mid } })
+    let parentMenu: any | undefined
     if (menu && menu.parentId)
-      parentMenu = await this.menuRepository.findOneBy({ id: menu.parentId })
+      parentMenu = await this.prisma.menu.findUnique({ where: { id: menu.parentId } })
 
     return { menu, parentMenu }
   }
@@ -163,7 +168,7 @@ export class MenuService {
    * 查找节点路由是否存在
    */
   async findRouterExist(path: string): Promise<boolean> {
-    const menus = await this.menuRepository.findOneBy({ path })
+    const menus = await this.prisma.menu.findMany({ where: { path } })
     return !isEmpty(menus)
   }
 
@@ -175,14 +180,18 @@ export class MenuService {
     let permission: any[] = []
     let result: any = null
     if (this.roleService.hasAdminRole(roleIds)) {
-      result = await this.menuRepository.findBy({
-        permission: Not(IsNull()),
-        type: In([1, 2]),
+      result = await this.prisma.menu.findMany({
+        where: {
+          permission: {
+            not: null
+          },
+          type: {
+            in: [1, 2]
+          }
+        }
       })
-    }
-    else {
-      if (isEmpty(roleIds))
-        return permission
+    } else {
+      if (isEmpty(roleIds)) return permission
 
       result = await this.menuRepository
         .createQueryBuilder('menu')
@@ -194,8 +203,7 @@ export class MenuService {
     }
     if (!isEmpty(result)) {
       result.forEach((e) => {
-        if (e.permission)
-          permission = concat(permission, e.permission.split(','))
+        if (e.permission) permission = concat(permission, e.permission.split(','))
       })
       permission = uniq(permission)
     }
@@ -206,7 +214,9 @@ export class MenuService {
    * 删除多项菜单
    */
   async deleteMenuItem(mids: number[]): Promise<void> {
-    await this.menuRepository.delete(mids)
+    await this.prisma.menu.deleteMany({
+      where: { id: { in: mids } }
+    })
   }
 
   /**
@@ -218,8 +228,6 @@ export class MenuService {
     if (online) {
       // 判断是否在线
       await this.redis.set(genAuthPermKey(uid), JSON.stringify(perms))
-      console.log('refreshPerms')
-
       this.sseService.noticeClientToUpdateMenusByUserIds([uid])
     }
   }
@@ -231,8 +239,8 @@ export class MenuService {
     const onlineUserIds: string[] = await this.redis.keys(genAuthTokenKey('*'))
     if (onlineUserIds && onlineUserIds.length > 0) {
       const promiseArr = onlineUserIds
-        .map(i => Number.parseInt(i.split(RedisKeys.AUTH_TOKEN_PREFIX)[1]))
-        .filter(i => i)
+        .map((i) => Number.parseInt(i.split(RedisKeys.AUTH_TOKEN_PREFIX)[1]))
+        .filter((i) => i)
         .map(async (uid) => {
           const perms = await this.getPermissions(uid)
           await this.redis.set(genAuthPermKey(uid), JSON.stringify(perms))
@@ -251,9 +259,9 @@ export class MenuService {
     return !!(await this.menuRepository.findOne({
       where: {
         roles: {
-          id,
-        },
-      },
+          id
+        }
+      }
     }))
   }
 }

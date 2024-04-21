@@ -6,7 +6,7 @@ import {
   Get,
   Post,
   Put,
-  Query,
+  Query
 } from '@nestjs/common'
 import { ApiOperation, ApiTags } from '@nestjs/swagger'
 import { flattenDeep } from 'lodash'
@@ -14,7 +14,11 @@ import { flattenDeep } from 'lodash'
 import { ApiResult } from '~/common/decorators/api-result.decorator'
 import { IdParam } from '~/common/decorators/id-param.decorator'
 import { ApiSecurityAuth } from '~/common/decorators/swagger.decorator'
-import { Perm, definePermission, getDefinePermissions } from '~/modules/auth/decorators/permission.decorator'
+import {
+  Perm,
+  definePermission,
+  getDefinePermissions
+} from '~/modules/auth/decorators/permission.decorator'
 
 import { MenuDto, MenuQueryDto, MenuUpdateDto } from './menu.dto'
 import { MenuItemInfo } from './menu.model'
@@ -25,7 +29,7 @@ export const permissions = definePermission('system:menu', {
   CREATE: 'create',
   READ: 'read',
   UPDATE: 'update',
-  DELETE: 'delete',
+  DELETE: 'delete'
 } as const)
 
 @ApiTags('System - 菜单权限模块')
@@ -55,8 +59,7 @@ export class MenuController {
   async create(@Body() dto: MenuDto): Promise<void> {
     // check
     await this.menuService.check(dto)
-    if (!dto.parentId)
-      dto.parentId = null
+    if (!dto.parentId) dto.parentId = null
 
     await this.menuService.create(dto)
     if (dto.type === 2) {
@@ -71,8 +74,7 @@ export class MenuController {
   async update(@IdParam() id: number, @Body() dto: MenuUpdateDto): Promise<void> {
     // check
     await this.menuService.check(dto)
-    if (dto.parentId === -1 || !dto.parentId)
-      dto.parentId = null
+    if (dto.parentId === -1 || !dto.parentId) dto.parentId = null
 
     await this.menuService.update(id, dto)
     if (dto.type === 2) {
