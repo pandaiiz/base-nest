@@ -145,7 +145,7 @@ model RefreshToken {
   // 刷新令牌
   accessToken   AccessToken @relation(fields: [accessTokenId], references: [id])
   // 刷新令牌ID
-  accessTokenId String      @unique @map("access_token_id")
+  accessTokenId String      @map("access_token_id") @unique
 
   @@map("user_refresh_tokens")
 }

@@ -69,7 +69,6 @@ export class DeptController {
     if (count > 0) throw new BusinessException(ErrorEnum.DEPARTMENT_HAS_ASSOCIATED_USERS)
 
     const count2 = await this.deptService.countChildDept(id)
-    console.log('count2', count2)
     if (count2 > 0) throw new BusinessException(ErrorEnum.DEPARTMENT_HAS_CHILD_DEPARTMENTS)
 
     await this.deptService.delete(id)

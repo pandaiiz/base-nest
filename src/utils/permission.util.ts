@@ -12,6 +12,8 @@ export interface RouteRecordRaw {
   name: string
   component?: string
   redirect?: string
+  hideChildrenInMenu?: boolean
+  hideInMenu?: boolean
   meta: {
     title: string
     icon: string
@@ -28,7 +30,7 @@ export interface RouteRecordRaw {
 }
 
 function createRoute(menu: MenuEntity, _isRoot): RouteRecordRaw {
-  console.log(_isRoot, 'isRoot')
+  console.log('_isRoot:', _isRoot)
   const commonMeta: RouteRecordRaw['meta'] = {
     title: menu.name,
     icon: menu.icon,
@@ -48,6 +50,8 @@ function createRoute(menu: MenuEntity, _isRoot): RouteRecordRaw {
       path: menu.path,
       // component: 'IFrame',
       name: menu.name,
+      hideChildrenInMenu: menu.show === 0,
+      hideInMenu: menu.show === 0,
       meta: { ...commonMeta }
     }
   }
@@ -59,6 +63,8 @@ function createRoute(menu: MenuEntity, _isRoot): RouteRecordRaw {
       path: menu.path,
       component: menu.component,
       name: menu.name,
+      hideChildrenInMenu: menu.show === 0,
+      hideInMenu: menu.show === 0,
       meta: { ...commonMeta }
     }
   }
@@ -68,6 +74,8 @@ function createRoute(menu: MenuEntity, _isRoot): RouteRecordRaw {
     path: menu.path,
     name: menu.name,
     component: menu.component,
+    hideChildrenInMenu: menu.show === 0,
+    hideInMenu: menu.show === 0,
     meta: {
       ...commonMeta
     }
@@ -160,7 +168,7 @@ function filterMenuToTable(menus: MenuEntity[], parentMenu) {
   return res
 }
 
-export function generatorMenu(menu: MenuEntity[]) {
+export function generatorMenu(menu: any[]) {
   return filterMenuToTable(menu, null)
 }
 

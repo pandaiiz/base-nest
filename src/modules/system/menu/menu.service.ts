@@ -4,7 +4,7 @@ import { InjectRepository } from '@nestjs/typeorm'
 import Redis from 'ioredis'
 import { concat, isEmpty, uniq } from 'lodash'
 
-import { Like, Repository } from 'typeorm'
+import { Repository } from 'typeorm'
 
 import { BusinessException } from '~/common/exceptions/biz.exception'
 import { RedisKeys } from '~/constants/cache.constant'
@@ -34,16 +34,18 @@ export class MenuService {
   /**
    * 获取所有菜单以及权限
    */
-  async list({ name, path, permission, component, status }: MenuQueryDto): Promise<MenuEntity[]> {
-    const menus = await this.menuRepository.find({
+  async list({ name, path, permission, component, status }: MenuQueryDto): Promise<any[]> {
+    const menus = await this.prisma.menu.findMany({
       where: {
-        ...(name && { name: Like(`%${name}%`) }),
-        ...(path && { path: Like(`%${path}%`) }),
-        ...(permission && { permission: Like(`%${permission}%`) }),
-        ...(component && { component: Like(`%${component}%`) }),
+        ...(name && { name: { contains: name } }),
+        ...(path && { path: { contains: path } }),
+        ...(permission && { permission: { contains: permission } }),
+        ...(component && { component: { contains: component } }),
         ...(status && { status })
       },
-      order: { orderNo: 'ASC' }
+      orderBy: {
+        sort: 'asc'
+      }
     })
     const menuList = generatorMenu(menus)
 
@@ -56,7 +58,6 @@ export class MenuService {
   }
 
   async create(menu: MenuDto): Promise<void> {
-    console.log(menu)
     const result = await this.prisma.menu.create({
       data: menu
     })
@@ -97,6 +98,7 @@ export class MenuService {
     }
 
     const menuList = generatorRouters(menus)
+
     return menuList
   }
 

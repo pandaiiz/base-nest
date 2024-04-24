@@ -26,7 +26,6 @@ export class ServeController {
   @ApiResult({ type: ServeStatInfo })
   @AllowAnon()
   async stat(): Promise<ServeStatInfo> {
-    console.log(666)
     return this.serveService.getServeStat()
   }
 }
