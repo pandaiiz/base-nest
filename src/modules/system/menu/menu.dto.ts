@@ -1,14 +1,5 @@
 import { ApiProperty, PartialType } from '@nestjs/swagger'
-import {
-  IsBoolean,
-  IsIn,
-  IsInt,
-  IsOptional,
-  IsString,
-  Min,
-  MinLength,
-  ValidateIf
-} from 'class-validator'
+import { IsIn, IsInt, IsOptional, IsString, Min, MinLength, ValidateIf } from 'class-validator'
 
 export class MenuDto {
   @ApiProperty({ description: '菜单类型' })
@@ -34,16 +25,6 @@ export class MenuDto {
   @ValidateIf((o) => o.type !== 2)
   path: string
 
-  @ApiProperty({ description: '是否外链', default: false })
-  @ValidateIf((o) => o.type !== 2)
-  @IsBoolean()
-  isExt: boolean
-
-  @ApiProperty({ description: '外链打开方式', default: 1 })
-  @ValidateIf((o: MenuDto) => o.isExt)
-  @IsIn([1, 2])
-  extOpenMode: number
-
   @ApiProperty({ description: '菜单是否显示', default: 1 })
   @ValidateIf((o: MenuDto) => o.type !== 2)
   @IsIn([0, 1])
@@ -54,11 +35,6 @@ export class MenuDto {
   @IsString()
   @IsOptional()
   activeMenu?: string
-
-  @ApiProperty({ description: '是否开启页面缓存', default: 1 })
-  @ValidateIf((o: MenuDto) => o.type === 1)
-  @IsIn([0, 1])
-  keepAlive: number
 
   @ApiProperty({ description: '状态', default: 1 })
   @IsIn([0, 1])

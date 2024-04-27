@@ -5,8 +5,8 @@ import { EntityManager, In, Repository } from 'typeorm'
 
 import { PagerDto } from '~/common/dto/pager.dto'
 import { ROOT_ROLE_ID } from '~/constants/system.constant'
-import { paginate } from '~/helper/paginate'
-import { Pagination } from '~/helper/paginate/pagination'
+// import { paginate } from '~/helper/paginate'
+// import { Pagination } from '~/helper/paginate/pagination'
 import { MenuEntity } from '~/modules/system/menu/menu.entity'
 import { RoleEntity } from '~/modules/system/role/role.entity'
 
@@ -27,43 +27,51 @@ export class RoleService {
   /**
    * 列举所有角色：除去超级管理员
    */
-  async findAll({ page, pageSize }: PagerDto): Promise<Pagination<RoleEntity>> {
-    return paginate(this.roleRepository, { page, pageSize })
+  async findAll({ page, pageSize }: PagerDto): Promise<any> {
+    return this.prisma.role.findMany({
+      skip: (page - 1) * pageSize,
+      take: pageSize
+    })
   }
 
   /**
    * 根据角色获取角色信息
    */
   async info(id: number) {
-    const info = await this.roleRepository
-      .createQueryBuilder('role')
-      .where({
+    const role = await this.prisma.role.findUnique({
+      where: {
         id
-      })
-      .getOne()
-
-    const menus = await this.menuRepository.find({
-      where: { roles: { id } },
-      select: ['id']
+      },
+      include: {
+        menus: {
+          select: {
+            id: true
+          }
+        }
+      }
     })
-
-    return { ...info, menuIds: menus.map((m) => m.id) }
+    const menuIds = role.menus.map((m) => m.id)
+    delete role.menus
+    return { ...role, menuIds }
   }
 
   async delete(id: number): Promise<void> {
     if (id === ROOT_ROLE_ID) throw new Error('不能删除超级管理员')
-    await this.roleRepository.delete(id)
+    await this.prisma.role.delete({ where: { id } })
   }
 
   /**
    * 增加角色
    */
   async create({ menuIds, ...data }: RoleDto): Promise<{ roleId: number }> {
-    const role = await this.roleRepository.save({
-      ...data,
-      menus: menuIds ? await this.menuRepository.findBy({ id: In(menuIds) }) : []
+    const role = await this.prisma.role.create({
+      data: {
+        ...data,
+        menus: {
+          connect: menuIds.map((id) => ({ id }))
+        }
+      }
     })
-
     return { roleId: role.id }
   }
 
@@ -71,7 +79,21 @@ export class RoleService {
    * 更新角色信息
    */
   async update(id, { menuIds, ...data }: RoleUpdateDto): Promise<void> {
-    await this.roleRepository.update(id, data)
+    console.log(
+      'menuIds',
+      menuIds,
+      menuIds.map((menuId) => ({ id: menuId }))
+    )
+    await this.prisma.role.update({
+      where: { id },
+      data: {
+        ...data,
+        menus: {
+          connect: menuIds.map((menuId) => ({ id: menuId }))
+        }
+      }
+    })
+    // await this.roleRepository.update(id, data)
 
     if (!isEmpty(menuIds)) {
       // using transaction

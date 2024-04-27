@@ -30,15 +30,6 @@ export class MenuEntity extends CommonEntity {
   @Column({ name: 'component', nullable: true })
   component: string
 
-  @Column({ name: 'is_ext', type: 'boolean', default: false })
-  isExt: boolean
-
-  @Column({ name: 'ext_open_mode', type: 'tinyint', default: 1 })
-  extOpenMode: number
-
-  @Column({ name: 'keep_alive', type: 'tinyint', default: 1 })
-  keepAlive: number
-
   @Column({ type: 'tinyint', default: 1 })
   show: number
 
@@ -48,8 +39,8 @@ export class MenuEntity extends CommonEntity {
   @Column({ type: 'tinyint', default: 1 })
   status: number
 
-  @ManyToMany(() => RoleEntity, role => role.menus, {
-    onDelete: 'CASCADE',
+  @ManyToMany(() => RoleEntity, (role) => role.menus, {
+    onDelete: 'CASCADE'
   })
   roles: Relation<RoleEntity[]>
 }

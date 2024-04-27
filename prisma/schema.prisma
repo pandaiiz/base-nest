@@ -34,9 +34,6 @@ model Menu {
   icon        String?
   sort        Int?     @default(0)
   component   String?
-  isExt       Boolean  @default(false) @map("is_ext")
-  extOpenMode Int      @default(1) @map("ext_open_mode")
-  keepAlive   Int      @default(1) @map("keep_alive")
   show        Int      @default(1)
   activeMenu  String?  @map("active_menu")
   status      Int      @default(1)

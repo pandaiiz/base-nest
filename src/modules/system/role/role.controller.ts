@@ -6,7 +6,7 @@ import {
   Get,
   Post,
   Put,
-  Query,
+  Query
 } from '@nestjs/common'
 import { ApiOperation, ApiTags } from '@nestjs/swagger'
 
@@ -28,7 +28,7 @@ export const permissions = definePermission('system:role', {
   CREATE: 'create',
   READ: 'read',
   UPDATE: 'update',
-  DELETE: 'delete',
+  DELETE: 'delete'
 } as const)
 
 @ApiTags('System - 角色模块')
@@ -37,7 +37,7 @@ export const permissions = definePermission('system:role', {
 export class RoleController {
   constructor(
     private roleService: RoleService,
-    private menuService: MenuService,
+    private menuService: MenuService
   ) {}
 
   @Get()
@@ -66,7 +66,7 @@ export class RoleController {
   @Put(':id')
   @ApiOperation({ summary: '更新角色' })
   @Perm(permissions.UPDATE)
-  async update(@IdParam() id: number, @Body()dto: RoleUpdateDto): Promise<void> {
+  async update(@IdParam() id: number, @Body() dto: RoleUpdateDto): Promise<void> {
     await this.roleService.update(id, dto)
     await this.menuService.refreshOnlineUserPerms()
   }

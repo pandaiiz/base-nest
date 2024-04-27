@@ -4,17 +4,17 @@ import { Allow, IsEnum, IsInt, IsOptional, IsString, Max, Min } from 'class-vali
 
 export enum Order {
   ASC = 'ASC',
-  DESC = 'DESC',
+  DESC = 'DESC'
 }
 
-export class PagerDto<T = any> {
+export class PagerDto {
   @ApiProperty({ minimum: 1, default: 1 })
   @Min(1)
   @IsInt()
   @Expose()
   @IsOptional({ always: true })
   @Transform(({ value: val }) => (val ? Number.parseInt(val) : 1), {
-    toClassOnly: true,
+    toClassOnly: true
   })
   page?: number
 
@@ -25,7 +25,7 @@ export class PagerDto<T = any> {
   @IsOptional({ always: true })
   @Expose()
   @Transform(({ value: val }) => (val ? Number.parseInt(val) : 10), {
-    toClassOnly: true,
+    toClassOnly: true
   })
   pageSize?: number
 
