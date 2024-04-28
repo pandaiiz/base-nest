@@ -44,7 +44,7 @@ export class RoleController {
   @ApiOperation({ summary: '获取角色列表' })
   @ApiResult({ type: [RoleEntity], isPage: true })
   @Perm(permissions.LIST)
-  async list(@Query() dto: PagerDto) {
+  async list(@Query() dto: PagerDto & RoleDto) {
     return this.roleService.findAll(dto)
   }
 

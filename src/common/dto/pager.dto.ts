@@ -32,7 +32,8 @@ export class PagerDto {
   @ApiProperty()
   @IsString()
   @IsOptional()
-  field?: string // | keyof T
+  field?: string
+  // | keyof T
 
   @ApiProperty({ enum: Order })
   @IsEnum(Order)

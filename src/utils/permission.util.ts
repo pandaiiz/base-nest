@@ -2,7 +2,6 @@ import { ForbiddenException } from '@nestjs/common'
 
 import { envBoolean } from '~/global/env'
 import { MenuEntity } from '~/modules/system/menu/menu.entity'
-import { isExternal } from '~/utils/is.util'
 
 import { uniqueSlash } from './tool.util'
 
@@ -36,18 +35,6 @@ function createRoute(menu: MenuEntity, _isRoot): RouteRecordRaw {
     show: menu.show,
     activeMenu: menu.activeMenu,
     status: menu.status
-  }
-
-  if (isExternal(menu.path)) {
-    return {
-      id: menu.id,
-      path: menu.path,
-      // component: 'IFrame',
-      name: menu.name,
-      hideChildrenInMenu: menu.show === 0,
-      hideInMenu: menu.show === 0,
-      meta: { ...commonMeta }
-    }
   }
 
   // 目录

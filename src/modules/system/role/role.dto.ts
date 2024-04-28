@@ -1,12 +1,5 @@
 import { ApiProperty, PartialType } from '@nestjs/swagger'
-import {
-  IsArray,
-  IsIn,
-  IsOptional,
-  IsString,
-  Matches,
-  MinLength,
-} from 'class-validator'
+import { IsArray, IsIn, IsOptional, IsString, Matches, MinLength } from 'class-validator'
 
 export class RoleDto {
   @ApiProperty({ description: '角色名称' })

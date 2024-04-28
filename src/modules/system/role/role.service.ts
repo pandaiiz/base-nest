@@ -1,37 +1,44 @@
 import { Injectable } from '@nestjs/common'
-import { InjectEntityManager, InjectRepository } from '@nestjs/typeorm'
 import { isEmpty } from 'lodash'
-import { EntityManager, In, Repository } from 'typeorm'
 
 import { PagerDto } from '~/common/dto/pager.dto'
 import { ROOT_ROLE_ID } from '~/constants/system.constant'
 // import { paginate } from '~/helper/paginate'
 // import { Pagination } from '~/helper/paginate/pagination'
-import { MenuEntity } from '~/modules/system/menu/menu.entity'
-import { RoleEntity } from '~/modules/system/role/role.entity'
 
 import { RoleDto, RoleUpdateDto } from './role.dto'
 import { PrismaService } from 'nestjs-prisma'
 
 @Injectable()
 export class RoleService {
-  constructor(
-    @InjectRepository(RoleEntity)
-    private roleRepository: Repository<RoleEntity>,
-    @InjectRepository(MenuEntity)
-    private menuRepository: Repository<MenuEntity>,
-    @InjectEntityManager() private entityManager: EntityManager,
-    private prisma: PrismaService
-  ) {}
+  constructor(private prisma: PrismaService) {}
 
   /**
    * 列举所有角色：除去超级管理员
    */
-  async findAll({ page, pageSize }: PagerDto): Promise<any> {
-    return this.prisma.role.findMany({
-      skip: (page - 1) * pageSize,
-      take: pageSize
-    })
+  async findAll({ page, pageSize, status, name, value }: PagerDto & RoleDto): Promise<any> {
+    const query = {
+      where: {
+        name: { contains: name },
+        value: { contains: value },
+        status: status && +status
+      },
+      skip: (+page - 1) * +pageSize,
+      take: +pageSize
+    }
+    const [list, total] = await this.prisma.$transaction([
+      this.prisma.role.findMany(query),
+      this.prisma.role.count(query)
+    ])
+
+    return {
+      list,
+      pagination: {
+        total,
+        currentPage: page,
+        pageSize
+      }
+    }
   }
 
   /**
@@ -79,34 +86,15 @@ export class RoleService {
    * 更新角色信息
    */
   async update(id, { menuIds, ...data }: RoleUpdateDto): Promise<void> {
-    console.log(
-      'menuIds',
-      menuIds,
-      menuIds.map((menuId) => ({ id: menuId }))
-    )
     await this.prisma.role.update({
       where: { id },
       data: {
         ...data,
         menus: {
-          connect: menuIds.map((menuId) => ({ id: menuId }))
+          set: menuIds.map((menuId) => ({ id: menuId }))
         }
       }
     })
-    // await this.roleRepository.update(id, data)
-
-    if (!isEmpty(menuIds)) {
-      // using transaction
-      await this.entityManager.transaction(async (manager) => {
-        const menus = await this.menuRepository.find({
-          where: { id: In(menuIds) }
-        })
-
-        const role = await this.roleRepository.findOne({ where: { id } })
-        role.menus = menus
-        await manager.save(role)
-      })
-    }
   }
 
   /**
@@ -138,7 +126,7 @@ export class RoleService {
     ).map((r) => r.value)
   }
 
-  async isAdminRoleByUser(uid: number): Promise<boolean> {
+  /* async isAdminRoleByUser(uid: number): Promise<boolean> {
     const roles = await this.roleRepository.find({
       where: {
         users: { id: uid }
@@ -149,7 +137,7 @@ export class RoleService {
       return roles.some((r) => r.id === ROOT_ROLE_ID)
     }
     return false
-  }
+  } */
 
   hasAdminRole(rids: number[]): boolean {
     return rids.includes(ROOT_ROLE_ID)
@@ -159,12 +147,14 @@ export class RoleService {
    * 根据角色ID查找是否有关联用户
    */
   async checkUserByRoleId(id: number): Promise<boolean> {
-    return this.roleRepository.exist({
+    const { users } = await this.prisma.role.findUnique({
       where: {
-        users: {
-          roles: { id }
-        }
+        id
+      },
+      include: {
+        users: true
       }
     })
+    return users.length > 0
   }
 }

@@ -12,7 +12,7 @@ import {
   Matches,
   MaxLength,
   MinLength,
-  ValidateIf,
+  ValidateIf
 } from 'class-validator'
 import { isEmpty } from 'lodash'
 
@@ -22,7 +22,7 @@ export class UserDto {
   @ApiProperty({ description: '头像' })
   @IsOptional()
   @IsString()
-   avatar?: string
+  avatar?: string
 
   @ApiProperty({ description: '登录账号', example: 'admin' })
   @IsString()
@@ -34,7 +34,7 @@ export class UserDto {
   @ApiProperty({ description: '登录密码', example: 'a123456' })
   @IsOptional()
   @Matches(/^\S*(?=\S{6,})(?=\S*\d)(?=\S*[A-Za-z])\S*$/, {
-    message: '密码必须包含数字、字母，长度为6-16',
+    message: '密码必须包含数字、字母，长度为6-16'
   })
   password: string
 
@@ -57,7 +57,7 @@ export class UserDto {
 
   @ApiProperty({ description: '邮箱', example: 'bqy.dev@qq.com' })
   @IsEmail()
-  @ValidateIf(o => !isEmpty(o.email))
+  @ValidateIf((o) => !isEmpty(o.email))
   email: string
 
   @ApiProperty({ description: '手机号' })
@@ -85,7 +85,7 @@ export class UserDto {
 
 export class UserUpdateDto extends PartialType(UserDto) {}
 
-export class UserQueryDto extends IntersectionType(PagerDto<UserDto>, PartialType(UserDto)) {
+export class UserQueryDto extends IntersectionType(PagerDto, PartialType(UserDto)) {
   @ApiProperty({ description: '归属大区', example: 1, required: false })
   @IsInt()
   @IsOptional()
