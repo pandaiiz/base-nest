@@ -1,17 +1,13 @@
 import { InjectRedis } from '@liaoliaots/nestjs-redis'
 import { Injectable } from '@nestjs/common'
-import { InjectRepository } from '@nestjs/typeorm'
 import Redis from 'ioredis'
 import { concat, isEmpty, uniq } from 'lodash'
-
-import { Repository } from 'typeorm'
 
 import { BusinessException } from '~/common/exceptions/biz.exception'
 import { RedisKeys } from '~/constants/cache.constant'
 import { ErrorEnum } from '~/constants/error-code.constant'
 import { genAuthPermKey, genAuthTokenKey } from '~/helper/genRedisKey'
 import { SseService } from '~/modules/sse/sse.service'
-import { MenuEntity } from '~/modules/system/menu/menu.entity'
 
 import { deleteEmptyChildren, generatorMenu, generatorRouters } from '~/utils'
 
@@ -19,13 +15,12 @@ import { RoleService } from '../role/role.service'
 
 import { MenuDto, MenuQueryDto, MenuUpdateDto } from './menu.dto'
 import { PrismaService } from 'nestjs-prisma'
+import { Menu } from '@prisma/client'
 
 @Injectable()
 export class MenuService {
   constructor(
     @InjectRedis() private redis: Redis,
-    @InjectRepository(MenuEntity)
-    private menuRepository: Repository<MenuEntity>,
     private roleService: RoleService,
     private sseService: SseService,
     private prisma: PrismaService
@@ -77,7 +72,7 @@ export class MenuService {
    */
   async getMenus(uid: number) {
     const roleIds = await this.roleService.getRoleIdsByUser(uid)
-    let menus: any[] = []
+    let menus: Menu[] = []
     // let menus: MenuEntity[] = []
 
     if (isEmpty(roleIds)) return generatorRouters([])
@@ -89,17 +84,18 @@ export class MenuService {
         }
       })
     } else {
-      menus = await this.menuRepository
-        .createQueryBuilder('menu')
-        .innerJoinAndSelect('menu.roles', 'role')
-        .andWhere('role.id IN (:...roleIds)', { roleIds })
-        .orderBy('menu.order_no', 'ASC')
-        .getMany()
+      menus = await this.prisma.menu.findMany({
+        where: {
+          roles: {
+            some: {
+              id: { in: roleIds }
+            }
+          }
+        }
+      })
     }
 
-    const menuList = generatorRouters(menus)
-
-    return menuList
+    return generatorRouters(menus)
   }
 
   /**
@@ -195,13 +191,23 @@ export class MenuService {
     } else {
       if (isEmpty(roleIds)) return permission
 
-      result = await this.menuRepository
-        .createQueryBuilder('menu')
-        .innerJoinAndSelect('menu.roles', 'role')
-        .andWhere('role.id IN (:...roleIds)', { roleIds })
-        .andWhere('menu.type IN (1,2)')
-        .andWhere('menu.permission IS NOT NULL')
-        .getMany()
+      result = await this.prisma.menu.findMany({
+        where: {
+          roles: {
+            some: {
+              id: {
+                in: roleIds
+              }
+            }
+          },
+          type: {
+            in: [1, 2]
+          },
+          permission: {
+            not: null
+          }
+        }
+      })
     }
     if (!isEmpty(result)) {
       result.forEach((e) => {
@@ -249,7 +255,6 @@ export class MenuService {
           return uid
         })
       const uids = await Promise.all(promiseArr)
-      console.log('refreshOnlineUserPerms')
       this.sseService.noticeClientToUpdateMenusByUserIds(uids)
     }
   }
@@ -258,12 +263,7 @@ export class MenuService {
    * 根据菜单ID查找是否有关联角色
    */
   async checkRoleByMenuId(id: number): Promise<boolean> {
-    return !!(await this.menuRepository.findOne({
-      where: {
-        roles: {
-          id
-        }
-      }
-    }))
+    const { roles } = await this.prisma.menu.findUnique({ where: { id }, include: { roles: true } })
+    return roles.length > 0
   }
 }

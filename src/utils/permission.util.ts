@@ -4,6 +4,7 @@ import { envBoolean } from '~/global/env'
 import { MenuEntity } from '~/modules/system/menu/menu.entity'
 
 import { uniqueSlash } from './tool.util'
+import { Menu } from '@prisma/client'
 
 export interface RouteRecordRaw {
   id: number
@@ -17,7 +18,7 @@ export interface RouteRecordRaw {
     title: string
     icon: string
     type: number
-    orderNo: number
+    sort: number
     show: number
     activeMenu: string
     status: number
@@ -25,13 +26,13 @@ export interface RouteRecordRaw {
   children?: RouteRecordRaw[]
 }
 
-function createRoute(menu: MenuEntity, _isRoot): RouteRecordRaw {
+function createRoute(menu: Menu, _isRoot): RouteRecordRaw {
   console.log('_isRoot:', _isRoot)
   const commonMeta: RouteRecordRaw['meta'] = {
     title: menu.name,
     icon: menu.icon,
     type: menu.type,
-    orderNo: menu.orderNo,
+    sort: menu.sort,
     show: menu.show,
     activeMenu: menu.activeMenu,
     status: menu.status
@@ -63,7 +64,7 @@ function createRoute(menu: MenuEntity, _isRoot): RouteRecordRaw {
   }
 }
 
-function filterAsyncRoutes(menus: MenuEntity[], parentRoute: MenuEntity): RouteRecordRaw[] {
+function filterAsyncRoutes(menus: Menu[], parentRoute: Menu): RouteRecordRaw[] {
   const res: RouteRecordRaw[] = []
 
   menus.forEach((menu) => {
@@ -107,7 +108,7 @@ function filterAsyncRoutes(menus: MenuEntity[], parentRoute: MenuEntity): RouteR
   return res
 }
 
-export function generatorRouters(menus: MenuEntity[]) {
+export function generatorRouters(menus: Menu[]) {
   return filterAsyncRoutes(menus, null)
 }
 

@@ -12,13 +12,9 @@ import { MenuService } from './menu.service'
 const providers = [MenuService, SseService]
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([MenuEntity]),
-
-    forwardRef(() => RoleModule),
-  ],
+  imports: [TypeOrmModule.forFeature([MenuEntity]), forwardRef(() => RoleModule)],
   controllers: [MenuController],
   providers: [...providers],
-  exports: [TypeOrmModule, ...providers],
+  exports: [TypeOrmModule, ...providers]
 })
 export class MenuModule {}
