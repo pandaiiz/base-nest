@@ -21,7 +21,7 @@ export class DeptDto {
   @IsInt()
   @Min(0)
   @IsOptional()
-  orderNo: number
+  sort: number
 }
 
 export class TransferDeptDto {
@@ -41,12 +41,6 @@ export class MoveDept {
   @IsInt()
   @Min(0)
   id: number
-
-  @ApiProperty({ description: '移动到指定父级部门的ID' })
-  @IsInt()
-  @Min(0)
-  @IsOptional()
-  parentId: number
 }
 
 export class MoveDeptDto {

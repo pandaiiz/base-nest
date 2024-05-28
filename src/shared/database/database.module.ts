@@ -25,8 +25,7 @@ const providers = [EntityExistConstraint, UniqueConstraint]
         try {
           // 解析成 js 数组 ['error']
           loggerOptions = JSON.parse(loggerOptions)
-        }
-        catch {
+        } catch {
           // ignore
         }
 
@@ -34,18 +33,17 @@ const providers = [EntityExistConstraint, UniqueConstraint]
           ...configService.get<IDatabaseConfig>('database'),
           autoLoadEntities: true,
           logging: loggerOptions,
-          logger: new TypeORMLogger(loggerOptions),
+          logger: new TypeORMLogger(loggerOptions)
         }
       },
       // dataSource receives the configured DataSourceOptions
       // and returns a Promise<DataSource>.
       dataSourceFactory: async (options) => {
-        const dataSource = await new DataSource(options).initialize()
-        return dataSource
-      },
-    }),
+        return new DataSource(options).initialize()
+      }
+    })
   ],
   providers,
-  exports: providers,
+  exports: providers
 })
 export class DatabaseModule {}

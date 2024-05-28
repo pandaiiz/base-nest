@@ -26,7 +26,7 @@ const modules = [
   LogModule,
   TaskModule,
   OnlineModule,
-  ServeModule,
+  ServeModule
 ]
 
 @Module({
@@ -36,10 +36,10 @@ const modules = [
       {
         path: 'system',
         module: SystemModule,
-        children: [...modules],
-      },
-    ]),
+        children: [...modules]
+      }
+    ])
   ],
-  exports: [...modules],
+  exports: [...modules]
 })
 export class SystemModule {}

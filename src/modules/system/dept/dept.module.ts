@@ -14,6 +14,6 @@ const services = [DeptService]
   imports: [TypeOrmModule.forFeature([DeptEntity]), UserModule, RoleModule],
   controllers: [DeptController],
   providers: [...services],
-  exports: [TypeOrmModule, ...services],
+  exports: [TypeOrmModule, ...services]
 })
 export class DeptModule {}

@@ -4,23 +4,18 @@ import RoleModel from './Role.model'
 import DeptModel from './Dept.model'
 import AccessTokenModel from './AccessToken.model'
 import LoginLogModel from './LoginLog.model'
+import StorageModel from '../tools/Storage.model'
 
 export default createModel((UserModel) => {
   UserModel.mixin(BaseMixin)
     .string('username', { unique: true })
     .string('password')
-    .string('psalt', { raw: '@database.VarChar(32)' })
+    .string('salt', { raw: '@database.VarChar(32)' })
     .string('nickname', { optional: true })
     .string('avatar', { optional: true })
-    .string('qq', { optional: true })
-    .string('email', { optional: true })
     .string('phone', { optional: true })
     .string('remark', { optional: true })
     .int('status', { optional: true, default: 1 })
-    .string('icon', { optional: true })
-    .int('sort', { optional: true, default: 0 })
-    .string('path', { optional: true })
-    .string('component', { optional: true })
     // 用户和部门是多对一关系
     .relation('dept', DeptModel, { optional: true, fields: ['deptId'], references: ['id'] })
     .int('deptId', { optional: true, map: 'dept_id' })
@@ -40,16 +35,11 @@ export default createModel((UserModel) => {
       list: true,
       comments: ['// LoginLogs']
     })
+    // 用户和存储记录是一对多关系
+    .relation('storages', StorageModel, {
+      list: true,
+      comments: ['// Storage']
+    })
     .raw('@@index([deptId])')
     .map('sys_user')
 })
-
-//   @ManyToOne(() => DeptEntity, (dept) => dept.users)
-//   @JoinColumn({ name: 'dept_id' })
-//   dept: Relation<DeptEntity>
-
-//   @OneToMany(() => AccessTokenEntity, (accessToken) => accessToken.user, {
-//     cascade: true
-//   })
-//   accessTokens: Relation<AccessTokenEntity[]>
-// }

@@ -6,7 +6,6 @@ export default createModel((DeptModel) => {
   DeptModel.mixin(BaseMixin)
     .string('name', { comments: ['// 部门名称'] })
     .int('sort', { optional: true, default: 0 })
-    .int('parentId', { optional: true, default: 0, comments: ['// 父ID'] })
     .relation('users', UserModel, {
       list: true,
       comments: ['// 用户列表']

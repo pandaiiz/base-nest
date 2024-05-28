@@ -1,11 +1,9 @@
 import { Injectable } from '@nestjs/common'
 import { Subscriber } from 'rxjs'
-import { In } from 'typeorm'
 
 import { ROOT_ROLE_ID } from '~/constants/system.constant'
 
-import { RoleEntity } from '~/modules/system/role/role.entity'
-import { UserEntity } from '~/modules/user/user.entity'
+import { PrismaService } from 'nestjs-prisma'
 
 export interface MessageEvent {
   data?: string | number | object
@@ -18,6 +16,7 @@ const clientMap: Map<number, Subscriber<MessageEvent>[]> = new Map()
 
 @Injectable()
 export class SseService {
+  constructor(private prisma: PrismaService) {}
   addClient(uid: number, subscriber: Subscriber<MessageEvent>) {
     const clients = clientMap.get(uid) || []
     clientMap.set(uid, clients.concat(subscriber))
@@ -70,10 +69,14 @@ export class SseService {
    * 通过menuIds通知用户更新权限菜单
    */
   async noticeClientToUpdateMenusByMenuIds(menuIds: number[]): Promise<void> {
-    const roleMenus = await RoleEntity.find({
+    const roleMenus = await this.prisma.role.findMany({
       where: {
         menus: {
-          id: In(menuIds)
+          some: {
+            id: {
+              in: menuIds
+            }
+          }
         }
       }
     })
@@ -85,13 +88,18 @@ export class SseService {
    * 通过roleIds通知用户更新权限菜单
    */
   async noticeClientToUpdateMenusByRoleIds(roleIds: number[]): Promise<void> {
-    const users = await UserEntity.find({
+    const users = await this.prisma.user.findMany({
       where: {
         roles: {
-          id: In(roleIds)
+          some: {
+            id: {
+              in: roleIds
+            }
+          }
         }
       }
     })
+
     if (users) {
       const userIds = users.map((n) => n.id)
       await this.noticeClientToUpdateMenusByUserIds(userIds)

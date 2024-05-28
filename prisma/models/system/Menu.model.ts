@@ -1,6 +1,7 @@
 import { createModel } from 'schemix'
 import BaseMixin from '../../mixins/Base.mixin'
 import RoleModel from './Role.model'
+import MenuTypeEnum from '../../enums/MenuType.enum'
 
 export default createModel((MenuModel) => {
   MenuModel.mixin(BaseMixin)
@@ -8,13 +9,12 @@ export default createModel((MenuModel) => {
     .string('name')
     .string('path', { optional: true })
     .string('permission', { optional: true })
-    .int('type', { optional: true, default: 0 })
+    .enum('type', MenuTypeEnum)
     .string('icon', { optional: true })
     .int('sort', { optional: true, default: 0 })
     .string('path', { optional: true })
     .string('component', { optional: true })
     .int('show', { default: 1 })
-    .string('activeMenu', { optional: true, map: 'active_menu' })
     .int('status', { default: 1 })
     // 菜单和角色是多对多关系
     .relation('roles', RoleModel, {

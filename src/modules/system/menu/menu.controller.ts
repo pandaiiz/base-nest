@@ -11,7 +11,6 @@ import {
 import { ApiOperation, ApiTags } from '@nestjs/swagger'
 import { flattenDeep } from 'lodash'
 
-import { ApiResult } from '~/common/decorators/api-result.decorator'
 import { IdParam } from '~/common/decorators/id-param.decorator'
 import { ApiSecurityAuth } from '~/common/decorators/swagger.decorator'
 import {
@@ -21,7 +20,6 @@ import {
 } from '~/modules/auth/decorators/permission.decorator'
 
 import { MenuDto, MenuQueryDto, MenuUpdateDto } from './menu.dto'
-import { MenuItemInfo } from './menu.model'
 import { MenuService } from './menu.service'
 
 export const permissions = definePermission('system:menu', {
@@ -40,7 +38,7 @@ export class MenuController {
 
   @Get()
   @ApiOperation({ summary: '获取所有菜单列表' })
-  @ApiResult({ type: [MenuItemInfo] })
+  // @ApiResult({ type: [MenuItemInfo] })
   @Perm(permissions.LIST)
   async list(@Query() dto: MenuQueryDto) {
     return this.menuService.list(dto)
@@ -62,7 +60,7 @@ export class MenuController {
     if (!dto.parentId) dto.parentId = null
 
     await this.menuService.create(dto)
-    if (dto.type === 2) {
+    if (dto.type === 'ACCESS') {
       // 如果是权限发生更改，则刷新所有在线用户的权限
       await this.menuService.refreshOnlineUserPerms()
     }
@@ -77,7 +75,7 @@ export class MenuController {
     if (dto.parentId === -1 || !dto.parentId) dto.parentId = null
 
     await this.menuService.update(id, dto)
-    if (dto.type === 2) {
+    if (dto.type === 'ACCESS') {
       // 如果是权限发生更改，则刷新所有在线用户的权限
       await this.menuService.refreshOnlineUserPerms()
     }

@@ -1,17 +1,11 @@
 import { ClassSerializerInterceptor, Module } from '@nestjs/common'
-
 import { ConfigModule } from '@nestjs/config'
 import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core'
-
 import { ThrottlerGuard, ThrottlerModule, seconds } from '@nestjs/throttler'
-
 import { PrismaModule } from 'nestjs-prisma'
-
 import config from '~/config'
 import { SharedModule } from '~/shared/shared.module'
-
 import { AllExceptionsFilter } from './common/filters/any-exception.filter'
-
 import { IdempotenceInterceptor } from './common/interceptors/idempotence.interceptor'
 import { TimeoutInterceptor } from './common/interceptors/timeout.interceptor'
 import { TransformInterceptor } from './common/interceptors/transform.interceptor'
@@ -26,8 +20,6 @@ import { TasksModule } from './modules/tasks/tasks.module'
 import { TodoModule } from './modules/todo/todo.module'
 import { ToolsModule } from './modules/tools/tools.module'
 import { DatabaseModule } from './shared/database/database.module'
-
-import { SocketModule } from './socket/socket.module'
 
 @Module({
   imports: [
@@ -53,7 +45,6 @@ import { SocketModule } from './socket/socket.module'
     SystemModule,
     TasksModule.forRoot(),
     ToolsModule,
-    SocketModule,
     HealthModule,
     SseModule,
     NetdiskModule,

@@ -3,8 +3,8 @@ import { IsIn, IsInt, IsOptional, IsString, Min, MinLength, ValidateIf } from 'c
 
 export class MenuDto {
   @ApiProperty({ description: '菜单类型' })
-  @IsIn([0, 1, 2])
-  type: number
+  @IsIn(['ACCESS', 'MENU', 'CATALOG'])
+  type: string
 
   @ApiProperty({ description: '父级菜单' })
   @IsOptional()
@@ -26,15 +26,9 @@ export class MenuDto {
   path: string
 
   @ApiProperty({ description: '菜单是否显示', default: 1 })
-  @ValidateIf((o: MenuDto) => o.type !== 2)
+  @ValidateIf((o: MenuDto) => o.type !== 'ACCESS')
   @IsIn([0, 1])
   show: number
-
-  @ApiProperty({ description: '设置当前路由高亮的菜单项，一般用于详情页' })
-  @ValidateIf((o: MenuDto) => o.type !== 2 && o.show === 0)
-  @IsString()
-  @IsOptional()
-  activeMenu?: string
 
   @ApiProperty({ description: '状态', default: 1 })
   @IsIn([0, 1])
@@ -42,18 +36,18 @@ export class MenuDto {
 
   @ApiProperty({ description: '菜单图标' })
   @IsOptional()
-  @ValidateIf((o: MenuDto) => o.type !== 2)
+  @ValidateIf((o: MenuDto) => o.type !== 'ACCESS')
   @IsString()
   icon?: string
 
   @ApiProperty({ description: '对应权限' })
-  @ValidateIf((o: MenuDto) => o.type === 2)
+  @ValidateIf((o: MenuDto) => o.type === 'ACCESS')
   @IsString()
   @IsOptional()
   permission: string
 
   @ApiProperty({ description: '菜单路由路径或外链' })
-  @ValidateIf((o: MenuDto) => o.type !== 2)
+  @ValidateIf((o: MenuDto) => o.type !== 'ACCESS')
   @IsString()
   @IsOptional()
   component?: string

@@ -4,7 +4,7 @@ import { InjectEntityManager, InjectRepository } from '@nestjs/typeorm'
 import Redis from 'ioredis'
 import { isEmpty, isNil } from 'lodash'
 
-import { EntityManager, In, Like, Repository } from 'typeorm'
+import { EntityManager, In, Repository } from 'typeorm'
 
 import { BusinessException } from '~/common/exceptions/biz.exception'
 import { ErrorEnum } from '~/constants/error-code.constant'
@@ -16,8 +16,6 @@ import {
   genOnlineUserKey
 } from '~/helper/genRedisKey'
 
-import { paginate } from '~/helper/paginate'
-import { Pagination } from '~/helper/paginate/pagination'
 import { AccountUpdateDto } from '~/modules/auth/dto/account.dto'
 import { RegisterDto } from '~/modules/auth/dto/auth.dto'
 import { QQService } from '~/shared/helper/qq.service'
@@ -35,6 +33,7 @@ import { UserDto, UserQueryDto, UserUpdateDto } from './dto/user.dto'
 import { UserEntity } from './user.entity'
 import { AccountInfo } from './user.model'
 import { PrismaService } from 'nestjs-prisma'
+import { User } from '@prisma/client'
 
 @Injectable()
 export class UserService {
@@ -51,17 +50,16 @@ export class UserService {
     private prisma: PrismaService
   ) {}
 
-  async findUserById(id: number): Promise<UserEntity | undefined> {
-    return this.userRepository
-      .createQueryBuilder('user')
-      .where({
+  async findUserById(id: number): Promise<User | undefined> {
+    return this.prisma.user.findUnique({
+      where: {
         id,
         status: UserStatus.Enabled
-      })
-      .getOne()
+      }
+    })
   }
 
-  async findUserByUserName(username: string): Promise<any | undefined> {
+  async findUserByUserName(username: string): Promise<User | undefined> {
     return this.prisma.user.findUnique({
       where: {
         username,
@@ -75,15 +73,14 @@ export class UserService {
    * @param uid user id
    */
   async getAccountInfo(uid: number): Promise<AccountInfo> {
-    const user: UserEntity = await this.userRepository
-      .createQueryBuilder('user')
-      .leftJoinAndSelect('user.roles', 'role')
-      .where(`user.id = :uid`, { uid })
-      .getOne()
-
+    const user = await this.prisma.user.findUnique({
+      where: {
+        id: uid
+      }
+    })
     if (isEmpty(user)) throw new BusinessException(ErrorEnum.USER_NOT_FOUND)
-
-    delete user?.psalt
+    delete user?.salt
+    delete user?.password
 
     return user
   }
@@ -119,11 +116,11 @@ export class UserService {
     const user = await this.userRepository.findOneBy({ id: uid })
     if (isEmpty(user)) throw new BusinessException(ErrorEnum.USER_NOT_FOUND)
 
-    const comparePassword = md5(`${dto.oldPassword}${user.psalt}`)
+    const comparePassword = md5(`${dto.oldPassword}${user.salt}`)
     // 原密码不一致，不允许更改
     if (user.password !== comparePassword) throw new BusinessException(ErrorEnum.PASSWORD_MISMATCH)
 
-    const password = md5(`${dto.newPassword}${user.psalt}`)
+    const password = md5(`${dto.newPassword}${user.salt}`)
     await this.userRepository.update({ id: uid }, { password })
     await this.upgradePasswordV(user.id)
   }
@@ -138,7 +135,7 @@ export class UserService {
       }
     })
 
-    const newPassword = md5(`${password}${user.psalt}`)
+    const newPassword = md5(`${password}${user.salt}`)
     await this.prisma.user.update({
       where: {
         id: uid
@@ -173,7 +170,7 @@ export class UserService {
         username,
         password,
         ...data,
-        psalt: salt,
+        salt: salt,
         roles: await this.roleRepository.findBy({ id: In(roleIds) }),
         dept: await DeptEntity.findOneBy({ id: deptId })
       })
@@ -233,7 +230,7 @@ export class UserService {
       .getOne()
 
     delete user.password
-    delete user.psalt
+    delete user.salt
 
     return user
   }
@@ -244,16 +241,27 @@ export class UserService {
   async delete(userIds: number[]): Promise<void | never> {
     const rootUserId = await this.findRootUserId()
     if (userIds.includes(rootUserId)) throw new BadRequestException('不能删除root用户!')
-
-    await this.userRepository.delete(userIds)
+    await this.prisma.user.deleteMany({
+      where: {
+        id: {
+          in: userIds
+        }
+      }
+    })
   }
 
   /**
    * 查找超管的用户ID
    */
   async findRootUserId(): Promise<number> {
-    const user = await this.userRepository.findOneBy({
-      roles: { id: ROOT_ROLE_ID }
+    const user = await this.prisma.user.findFirst({
+      where: {
+        roles: {
+          some: {
+            id: ROOT_ROLE_ID
+          }
+        }
+      }
     })
     return user.id
   }
@@ -261,7 +269,7 @@ export class UserService {
   /**
    * 查询用户列表
    */
-  async list({
+  /* async list({
     page,
     pageSize,
     username,
@@ -288,6 +296,38 @@ export class UserService {
       page,
       pageSize
     })
+  } */
+
+  async list({ page, pageSize, username, nickname, deptId, status }: UserQueryDto): Promise<any> {
+    const query = {
+      where: {
+        username: { contains: username },
+        nickname: { contains: nickname },
+        status: status && +status,
+        deptId: deptId && +deptId
+      },
+      skip: (+page - 1) * +pageSize,
+      take: +pageSize
+    }
+    const [list, total] = await this.prisma.$transaction([
+      this.prisma.user.findMany({
+        ...query,
+        include: {
+          dept: true,
+          roles: true
+        }
+      }),
+      this.prisma.user.count(query)
+    ])
+
+    return {
+      list,
+      pagination: {
+        total,
+        currentPage: page,
+        pageSize
+      }
+    }
   }
 
   /**
@@ -347,9 +387,7 @@ export class UserService {
    * 注册
    */
   async register({ username, ...data }: RegisterDto): Promise<void> {
-    const exists = await this.userRepository.findOneBy({
-      username
-    })
+    const exists = await this.prisma.user.findUnique({ where: { username } })
     if (!isEmpty(exists)) throw new BusinessException(ErrorEnum.SYSTEM_USER_EXISTS)
 
     await this.entityManager.transaction(async (manager) => {
@@ -361,7 +399,7 @@ export class UserService {
         username,
         password,
         status: 1,
-        psalt: salt
+        salt: salt
       })
 
       const user = await manager.save(u)

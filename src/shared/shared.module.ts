@@ -25,8 +25,8 @@ import { RedisModule } from './redis/redis.module'
     ThrottlerModule.forRoot([
       {
         limit: 3,
-        ttl: 60000,
-      },
+        ttl: 60000
+      }
     ]),
     EventEmitterModule.forRoot({
       wildcard: true,
@@ -35,15 +35,15 @@ import { RedisModule } from './redis/redis.module'
       removeListener: false,
       maxListeners: 20,
       verboseMemoryLeak: isDev,
-      ignoreErrors: false,
+      ignoreErrors: false
     }),
     // redis
     RedisModule,
     // mailer
     MailerModule,
     // helper
-    HelperModule,
+    HelperModule
   ],
-  exports: [HttpModule, MailerModule, RedisModule, HelperModule],
+  exports: [HttpModule, MailerModule, RedisModule, HelperModule]
 })
 export class SharedModule {}

@@ -1,10 +1,10 @@
 import { ForbiddenException } from '@nestjs/common'
 
 import { envBoolean } from '~/global/env'
-import { MenuEntity } from '~/modules/system/menu/menu.entity'
 
 import { uniqueSlash } from './tool.util'
 import { Menu } from '@prisma/client'
+import { RoleEntity } from '~/modules/system/role/role.entity'
 
 export interface RouteRecordRaw {
   id: number
@@ -17,29 +17,26 @@ export interface RouteRecordRaw {
   meta: {
     title: string
     icon: string
-    type: number
+    type: string
     sort: number
     show: number
-    activeMenu: string
     status: number
   }
   children?: RouteRecordRaw[]
 }
 
-function createRoute(menu: Menu, _isRoot): RouteRecordRaw {
-  console.log('_isRoot:', _isRoot)
+function createRoute(menu: Menu): RouteRecordRaw {
   const commonMeta: RouteRecordRaw['meta'] = {
     title: menu.name,
     icon: menu.icon,
     type: menu.type,
     sort: menu.sort,
     show: menu.show,
-    activeMenu: menu.activeMenu,
     status: menu.status
   }
 
   // 目录
-  if (menu.type === 0) {
+  if (menu.type === 'CATALOG') {
     return {
       id: menu.id,
       path: menu.path,
@@ -68,7 +65,7 @@ function filterAsyncRoutes(menus: Menu[], parentRoute: Menu): RouteRecordRaw[] {
   const res: RouteRecordRaw[] = []
 
   menus.forEach((menu) => {
-    if (menu.type === 2 || !menu.status) {
+    if (menu.type === 'ACCESS' || !menu.status) {
       // 如果是权限或禁用直接跳过
       return
     }
@@ -79,24 +76,24 @@ function filterAsyncRoutes(menus: Menu[], parentRoute: Menu): RouteRecordRaw[] {
       return uniqueSlash(path.startsWith('/') ? path : `/${parentPath}/${path}`)
     }
 
-    if (!parentRoute && !menu.parentId && menu.type === 1) {
+    if (!parentRoute && !menu.parentId && menu.type === 'MENU') {
       // 根菜单
-      realRoute = createRoute(menu, true)
-    } else if (!parentRoute && !menu.parentId && menu.type === 0) {
+      realRoute = createRoute(menu)
+    } else if (!parentRoute && !menu.parentId && menu.type === 'CATALOG') {
       // 目录
       const childRoutes = filterAsyncRoutes(menus, menu)
-      realRoute = createRoute(menu, true)
+      realRoute = createRoute(menu)
       if (childRoutes && childRoutes.length > 0) {
         realRoute.redirect = genFullPath(childRoutes[0].path, realRoute.path)
         realRoute.children = childRoutes
       }
-    } else if (parentRoute && parentRoute.id === menu.parentId && menu.type === 1) {
+    } else if (parentRoute && parentRoute.id === menu.parentId && menu.type === 'MENU') {
       // 子菜单
-      realRoute = createRoute(menu, false)
-    } else if (parentRoute && parentRoute.id === menu.parentId && menu.type === 0) {
+      realRoute = createRoute(menu)
+    } else if (parentRoute && parentRoute.id === menu.parentId && menu.type === 'CATALOG') {
       // 如果还是目录，继续递归
       const childRoutes = filterAsyncRoutes(menus, menu)
-      realRoute = createRoute(menu, false)
+      realRoute = createRoute(menu)
       if (childRoutes && childRoutes.length > 0) {
         realRoute.redirect = genFullPath(childRoutes[0].path, realRoute.path)
         realRoute.children = childRoutes
@@ -113,32 +110,48 @@ export function generatorRouters(menus: Menu[]) {
 }
 
 // 获取所有菜单以及权限
-function filterMenuToTable(menus: MenuEntity[], parentMenu) {
+function filterMenuToTable(menus: Menu[], parentMenu: Menu) {
   const res = []
   menus.forEach((menu) => {
     // 根级别菜单渲染
-    let realMenu
-    if (!parentMenu && !menu.parentId && menu.type === 1) {
+    let realMenu: {
+      children?: any
+      pid?: any
+      parentId?: number
+      name?: string
+      path?: string
+      permission?: string
+      type?: string
+      icon?: string
+      component?: string
+      show?: number
+      status?: number
+      roles?: RoleEntity[]
+      id?: number
+      createdAt?: Date
+      updatedAt?: Date
+    }
+    if (!parentMenu && !menu.parentId && menu.type === 'MENU') {
       // 根菜单，查找该跟菜单下子菜单，因为可能会包含权限
       const childMenu = filterMenuToTable(menus, menu)
       realMenu = { ...menu }
       realMenu.children = childMenu
-    } else if (!parentMenu && !menu.parentId && menu.type === 0) {
+    } else if (!parentMenu && !menu.parentId && menu.type === 'CATALOG') {
       // 根目录
       const childMenu = filterMenuToTable(menus, menu)
       realMenu = { ...menu }
       realMenu.children = childMenu
-    } else if (parentMenu && parentMenu.id === menu.parentId && menu.type === 1) {
+    } else if (parentMenu && parentMenu.id === menu.parentId && menu.type === 'MENU') {
       // 子菜单下继续找是否有子菜单
       const childMenu = filterMenuToTable(menus, menu)
       realMenu = { ...menu }
       realMenu.children = childMenu
-    } else if (parentMenu && parentMenu.id === menu.parentId && menu.type === 0) {
+    } else if (parentMenu && parentMenu.id === menu.parentId && menu.type === 'CATALOG') {
       // 如果还是目录，继续递归
       const childMenu = filterMenuToTable(menus, menu)
       realMenu = { ...menu }
       realMenu.children = childMenu
-    } else if (parentMenu && parentMenu.id === menu.parentId && menu.type === 2) {
+    } else if (parentMenu && parentMenu.id === menu.parentId && menu.type === 'ACCESS') {
       realMenu = { ...menu }
     }
     // add curent route

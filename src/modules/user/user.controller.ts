@@ -1,4 +1,14 @@
-import { Body, Controller, Delete, Get, Param, ParseArrayPipe, Post, Put, Query } from '@nestjs/common'
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  ParseArrayPipe,
+  Post,
+  Put,
+  Query
+} from '@nestjs/common'
 import { ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger'
 
 import { ApiResult } from '~/common/decorators/api-result.decorator'
@@ -19,9 +29,8 @@ export const permissions = definePermission('system:user', {
   READ: 'read',
   UPDATE: 'update',
   DELETE: 'delete',
-
   PASSWORD_UPDATE: 'password:update',
-  PASSWORD_RESET: 'pass:reset',
+  PASSWORD_RESET: 'pass:reset'
 } as const)
 
 @ApiTags('System - 用户模块')
@@ -30,7 +39,7 @@ export const permissions = definePermission('system:user', {
 export class UserController {
   constructor(
     private userService: UserService,
-    private menuService: MenuService,
+    private menuService: MenuService
   ) {}
 
   @Get()
@@ -65,9 +74,15 @@ export class UserController {
 
   @Delete(':id')
   @ApiOperation({ summary: '删除用户' })
-  @ApiParam({ name: 'id', type: String, schema: { oneOf: [{ type: 'string' }, { type: 'number' }] } })
+  @ApiParam({
+    name: 'id',
+    type: String,
+    schema: { oneOf: [{ type: 'string' }, { type: 'number' }] }
+  })
   @Perm(permissions.DELETE)
-  async delete(@Param('id', new ParseArrayPipe({ items: Number, separator: ',' })) ids: number[]): Promise<void> {
+  async delete(
+    @Param('id', new ParseArrayPipe({ items: Number, separator: ',' })) ids: number[]
+  ): Promise<void> {
     await this.userService.delete(ids)
     await this.userService.multiForbidden(ids)
   }

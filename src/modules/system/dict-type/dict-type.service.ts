@@ -15,7 +15,7 @@ import { DictTypeDto, DictTypeQueryDto } from './dict-type.dto'
 export class DictTypeService {
   constructor(
     @InjectRepository(DictTypeEntity)
-    private dictTypeRepository: Repository<DictTypeEntity>,
+    private dictTypeRepository: Repository<DictTypeEntity>
   ) {}
 
   /**
@@ -25,13 +25,12 @@ export class DictTypeService {
     page,
     pageSize,
     name,
-    code,
+    code
   }: DictTypeQueryDto): Promise<Pagination<DictTypeEntity>> {
-    const queryBuilder = this.dictTypeRepository.createQueryBuilder('dict_type')
-      .where({
-        ...(name && { name: Like(`%${name}%`) }),
-        ...(code && { code: Like(`%${code}%`) }),
-      })
+    const queryBuilder = this.dictTypeRepository.createQueryBuilder('dict_type').where({
+      ...(name && { name: Like(`%${name}%`) }),
+      ...(code && { code: Like(`%${code}%`) })
+    })
 
     return paginate(queryBuilder, { page, pageSize })
   }
@@ -78,7 +77,6 @@ export class DictTypeService {
 
   async isExistKey(name: string): Promise<void | never> {
     const result = await this.dictTypeRepository.findOneBy({ name })
-    if (result)
-      throw new BusinessException(ErrorEnum.DICT_NAME_EXISTS)
+    if (result) throw new BusinessException(ErrorEnum.DICT_NAME_EXISTS)
   }
 }

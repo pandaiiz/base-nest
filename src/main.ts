@@ -1,12 +1,7 @@
 import cluster from 'node:cluster'
 import path from 'node:path'
 
-import {
-  HttpStatus,
-  Logger,
-  UnprocessableEntityException,
-  ValidationPipe,
-} from '@nestjs/common'
+import { HttpStatus, Logger, UnprocessableEntityException, ValidationPipe } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { NestFactory } from '@nestjs/core'
 import { NestFastifyApplication } from '@nestjs/platform-fastify'
@@ -26,15 +21,11 @@ import { LoggerService } from './shared/logger/logger.service'
 declare const module: any
 
 async function bootstrap() {
-  const app = await NestFactory.create<NestFastifyApplication>(
-    AppModule,
-    fastifyApp,
-    {
-      bufferLogs: true,
-      snapshot: true,
-      // forceCloseConnections: true,
-    },
-  )
+  const app = await NestFactory.create<NestFastifyApplication>(AppModule, fastifyApp, {
+    bufferLogs: true,
+    snapshot: true
+    // forceCloseConnections: true,
+  })
 
   const configService = app.get(ConfigService<ConfigKeyPaths>)
 
@@ -49,8 +40,7 @@ async function bootstrap() {
   // Starts listening for shutdown hooks
   !isDev && app.enableShutdownHooks()
 
-  if (isDev)
-    app.useGlobalInterceptors(new LoggingInterceptor())
+  if (isDev) app.useGlobalInterceptors(new LoggingInterceptor())
 
   app.useGlobalPipes(
     new ValidationPipe({
@@ -60,15 +50,15 @@ async function bootstrap() {
       // forbidNonWhitelisted: true, // 禁止 无装饰器验证的数据通过
       errorHttpStatusCode: HttpStatus.UNPROCESSABLE_ENTITY,
       stopAtFirstError: true,
-      exceptionFactory: errors =>
+      exceptionFactory: (errors) =>
         new UnprocessableEntityException(
           errors.map((e) => {
             const rule = Object.keys(e.constraints!)[0]
             const msg = e.constraints![rule]
             return msg
-          })[0],
-        ),
-    }),
+          })[0]
+        )
+    })
   )
 
   app.useWebSocketAdapter(new RedisIoAdapter(app))
@@ -82,14 +72,12 @@ async function bootstrap() {
     const env = cluster.isPrimary
     const prefix = env ? 'P' : 'W'
 
-    if (!isMainProcess)
-      return
+    if (!isMainProcess) return
 
     const logger = new Logger('NestApplication')
     logger.log(`[${prefix + pid}] Server running on ${url}`)
 
-    if (isDev)
-      logger.log(`[${prefix + pid}] OpenAPI: ${url}/api-docs`)
+    if (isDev) logger.log(`[${prefix + pid}] OpenAPI: ${url}/api-docs`)
   })
 
   if (module.hot) {

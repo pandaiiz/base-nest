@@ -1,10 +1,9 @@
 import { ApiHideProperty, ApiProperty } from '@nestjs/swagger'
-import { Column, Entity, JoinTable, ManyToMany, Relation } from 'typeorm'
+import { Column, Entity, ManyToMany, Relation } from 'typeorm'
 
 import { CommonEntity } from '~/common/entity/common.entity'
 
 import { UserEntity } from '../../user/user.entity'
-import { MenuEntity } from '../menu/menu.entity'
 
 @Entity({ name: 'sys_role' })
 export class RoleEntity extends CommonEntity {
@@ -29,15 +28,6 @@ export class RoleEntity extends CommonEntity {
   default: boolean
 
   @ApiHideProperty()
-  @ManyToMany(() => UserEntity, user => user.roles)
+  @ManyToMany(() => UserEntity, (user) => user.roles)
   users: Relation<UserEntity[]>
-
-  @ApiHideProperty()
-  @ManyToMany(() => MenuEntity, menu => menu.roles, {})
-  @JoinTable({
-    name: 'sys_role_menus',
-    joinColumn: { name: 'role_id', referencedColumnName: 'id' },
-    inverseJoinColumn: { name: 'menu_id', referencedColumnName: 'id' },
-  })
-  menus: Relation<MenuEntity[]>
 }

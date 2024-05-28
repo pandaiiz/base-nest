@@ -15,11 +15,9 @@ export class ServeService {
         si.osInfo(),
         si.cpu(),
         si.currentLoad(),
-        si.mem(),
+        si.mem()
       ])
     ).map((p: any) => p.value)
-
-    console.log(cpuinfo)
 
     // 计算总空间
     const diskListInfo = await si.fsSize()
@@ -38,7 +36,7 @@ export class ServeService {
         npmVersion: versions.npm,
         nodeVersion: versions.node,
         os: osinfo.platform,
-        arch: osinfo.arch,
+        arch: osinfo.arch
       },
       cpu: {
         manufacturer: cpuinfo.manufacturer,
@@ -51,15 +49,15 @@ export class ServeService {
         coresLoad: currentLoadinfo.cpus.map((e) => {
           return {
             rawLoad: e.rawLoad,
-            rawLoadIdle: e.rawLoadIdle,
+            rawLoadIdle: e.rawLoadIdle
           }
-        }),
+        })
       },
       disk: diskinfo,
       memory: {
         total: meminfo.total,
-        available: meminfo.available,
-      },
+        available: meminfo.available
+      }
     }
   }
 }

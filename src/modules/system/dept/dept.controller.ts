@@ -12,6 +12,7 @@ import { DeptEntity } from '~/modules/system/dept/dept.entity'
 
 import { DeptDto, DeptQueryDto } from './dept.dto'
 import { DeptService } from './dept.service'
+import { Dept } from '@prisma/client'
 
 export const permissions = definePermission('system:dept', {
   LIST: 'list',
@@ -31,7 +32,7 @@ export class DeptController {
   @ApiOperation({ summary: '获取部门列表' })
   @ApiResult({ type: [DeptEntity] })
   @Perm(permissions.LIST)
-  async list(@Query() dto: DeptQueryDto, @AuthUser('uid') uid: number): Promise<DeptEntity[]> {
+  async list(@Query() dto: DeptQueryDto, @AuthUser('uid') uid: number): Promise<Dept[]> {
     return this.deptService.getDeptList(uid, dto)
   }
 
@@ -67,10 +68,6 @@ export class DeptController {
     // 查询是否有关联用户或者部门，如果含有则无法删除
     const count = await this.deptService.countUserByDeptId(id)
     if (count > 0) throw new BusinessException(ErrorEnum.DEPARTMENT_HAS_ASSOCIATED_USERS)
-
-    const count2 = await this.deptService.countChildDept(id)
-    if (count2 > 0) throw new BusinessException(ErrorEnum.DEPARTMENT_HAS_CHILD_DEPARTMENTS)
-
     await this.deptService.delete(id)
   }
 }

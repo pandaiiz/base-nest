@@ -1,5 +1,5 @@
 import { createEnum } from 'schemix'
 
 export default createEnum((StatusEnum) => {
-  StatusEnum.addValue('PENDING').addValue('LIVE').addValue('DELETED').addValue('REMOVED')
+  StatusEnum.addValue('PLANING').addValue('IN_PRODUCTION').addValue('COMPLETED')
 })

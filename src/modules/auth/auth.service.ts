@@ -43,13 +43,12 @@ export class AuthService {
 
     if (isEmpty(user)) throw new BusinessException(ErrorEnum.USER_NOT_FOUND)
 
-    const comparePassword = md5(`${password}${user.psalt}`)
+    const comparePassword = md5(`${password}${user.salt}`)
     if (user.password !== comparePassword)
       throw new BusinessException(ErrorEnum.INVALID_USERNAME_PASSWORD)
 
     if (user) {
       const { ...result } = user
-      // const { password, ...result } = user
       return result
     }
 
@@ -64,7 +63,7 @@ export class AuthService {
     const user = await this.userService.findUserByUserName(username)
     if (isEmpty(user)) throw new BusinessException(ErrorEnum.INVALID_USERNAME_PASSWORD)
 
-    const comparePassword = md5(`${password}${user.psalt}`)
+    const comparePassword = md5(`${password}${user.salt}`)
     if (user.password !== comparePassword)
       throw new BusinessException(ErrorEnum.INVALID_USERNAME_PASSWORD)
 
@@ -100,7 +99,7 @@ export class AuthService {
   async checkPassword(username: string, password: string) {
     const user = await this.userService.findUserByUserName(username)
 
-    const comparePassword = md5(`${password}${user.psalt}`)
+    const comparePassword = md5(`${password}${user.salt}`)
     if (user.password !== comparePassword)
       throw new BusinessException(ErrorEnum.INVALID_USERNAME_PASSWORD)
   }

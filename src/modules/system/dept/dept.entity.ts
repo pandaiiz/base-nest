@@ -14,11 +14,7 @@ export class DeptEntity extends CommonEntity {
 
   @Column({ nullable: true, default: 0 })
   @ApiProperty({ description: '排序' })
-  orderNo: number
-
-  @Column({ nullable: true, default: 0 })
-  @ApiProperty({ description: '父ID' })
-  parentId?: number
+  sort: number
 
   @ApiHideProperty()
   @OneToMany(() => UserEntity, (user) => user.dept)

@@ -10,12 +10,14 @@ import { Pagination } from '~/helper/paginate/pagination'
 import { DictItemEntity } from '~/modules/system/dict-item/dict-item.entity'
 
 import { DictItemDto, DictItemQueryDto } from './dict-item.dto'
+import { PrismaService } from 'nestjs-prisma'
 
 @Injectable()
 export class DictItemService {
   constructor(
     @InjectRepository(DictItemEntity)
     private dictItemRepository: Repository<DictItemEntity>,
+    private prisma: PrismaService
   ) {}
 
   /**
@@ -26,16 +28,18 @@ export class DictItemService {
     pageSize,
     label,
     value,
-    typeId,
+    typeId
   }: DictItemQueryDto): Promise<Pagination<DictItemEntity>> {
-    const queryBuilder = this.dictItemRepository.createQueryBuilder('dict_item')
+    // await this.prisma
+    const queryBuilder = this.dictItemRepository
+      .createQueryBuilder('dict_item')
       .orderBy({ orderNo: 'ASC' })
       .where({
         ...(label && { label: Like(`%${label}%`) }),
         ...(value && { value: Like(`%${value}%`) }),
         type: {
-          id: typeId,
-        },
+          id: typeId
+        }
       })
 
     return paginate(queryBuilder, { page, pageSize })
@@ -56,8 +60,8 @@ export class DictItemService {
     await this.dictItemRepository.insert({
       ...rest,
       type: {
-        id: typeId,
-      },
+        id: typeId
+      }
     })
   }
 
@@ -69,8 +73,8 @@ export class DictItemService {
     await this.dictItemRepository.update(id, {
       ...rest,
       type: {
-        id: typeId,
-      },
+        id: typeId
+      }
     })
   }
 
@@ -91,7 +95,6 @@ export class DictItemService {
   async isExistKey(dto: DictItemDto): Promise<void | never> {
     const { value, typeId } = dto
     const result = await this.dictItemRepository.findOneBy({ value, type: { id: typeId } })
-    if (result)
-      throw new BusinessException(ErrorEnum.DICT_NAME_EXISTS)
+    if (result) throw new BusinessException(ErrorEnum.DICT_NAME_EXISTS)
   }
 }

@@ -8,11 +8,16 @@ generator client {
   provider = "prisma-client-js"
 }
 
+enum MenuType {
+  CATALOG
+  MENU
+  ACCESS
+}
+
 enum Status {
-  PENDING
-  LIVE
-  DELETED
-  REMOVED
+  PLANING
+  IN_PRODUCTION
+  COMPLETED
 }
 
 enum UserRole {
@@ -22,23 +27,92 @@ enum UserRole {
   @@map("userRole")
 }
 
+model ProductionPlan {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  // 数量
+  quantity  Int
+  status    Status
+  // 编码
+  code      String   @unique
+
+  @@map("sys_production_plan")
+}
+
+model Customer {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  name      String
+  // 编码
+  code      String   @unique
+
+  @@map("sys_customer")
+}
+
+model Employee {
+  id           Int       @id @default(autoincrement())
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+  name         String
+  code         String
+  // 计件数量
+  piecesNumber Float?    @map("pieces_number")
+  // 离职日期
+  leftAt       DateTime? @map("left_at")
+
+  @@map("sys_employee")
+}
+
+model Supplier {
+  id        Int        @id @default(autoincrement())
+  createdAt DateTime   @default(now()) @map("created_at")
+  updatedAt DateTime   @updatedAt @map("updated_at")
+  name      String
+  // 编码
+  code      String     @unique
+  // 原料
+  materials Material[] @relation("sys_supplier_material")
+
+  @@map("sys_supplier")
+}
+
+model Material {
+  id        Int        @id @default(autoincrement())
+  createdAt DateTime   @default(now()) @map("created_at")
+  updatedAt DateTime   @updatedAt @map("updated_at")
+  name      String
+  // 编码
+  code      String?    @unique
+  // 备注
+  remark    String?
+  // 单位
+  unit      String?
+  // 库存
+  stock     Float      @default(0)
+  // 供应商
+  suppliers Supplier[] @relation("sys_supplier_material")
+
+  @@map("sys_material")
+}
+
 model Menu {
-  id          Int      @id @default(autoincrement())
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
-  parentId    Int?     @map("parent_id")
-  name        String
-  path        String?
-  permission  String?
-  type        Int?     @default(0)
-  icon        String?
-  sort        Int?     @default(0)
-  component   String?
-  show        Int      @default(1)
-  activeMenu  String?  @map("active_menu")
-  status      Int      @default(1)
+  id         Int      @id @default(autoincrement())
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+  parentId   Int?     @map("parent_id")
+  name       String
+  path       String?
+  permission String?
+  type       MenuType
+  icon       String?
+  sort       Int?     @default(0)
+  component  String?
+  show       Int      @default(1)
+  status     Int      @default(1)
   // 角色
-  roles       Role[]   @relation("sys_menu_role")
+  roles      Role[]   @relation("sys_menu_role")
 
   @@map("sys_menu")
 }
@@ -72,8 +146,6 @@ model Dept {
   // 部门名称
   name      String
   sort      Int?     @default(0)
-  // 父ID
-  parentId  Int?     @default(0)
   // 用户列表
   users     User[]
 
@@ -101,24 +173,42 @@ model LoginLog {
   @@map("sys_login_log")
 }
 
+model Storage {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  // 文件名
+  name      String
+  // 真实文件名
+  fileName  String?
+  // 扩展名
+  extName   String?  @map("ext_name")
+  // 文件路径
+  path      String
+  // 文件类型
+  type      String?
+  // 文件大小
+  size      String?
+  // 用户ID
+  userId    Int?     @map("user_id")
+  user      User?    @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@map("tool_storage")
+}
+
 model User {
   id           Int           @id @default(autoincrement())
   createdAt    DateTime      @default(now()) @map("created_at")
   updatedAt    DateTime      @updatedAt @map("updated_at")
   username     String        @unique
   password     String
-  psalt        String        @database.VarChar(32)
+  salt         String        @database.VarChar(32)
   nickname     String?
   avatar       String?
-  qq           String?
-  email        String?
   phone        String?
   remark       String?
   status       Int?          @default(1)
-  icon         String?
-  sort         Int?          @default(0)
-  path         String?
-  component    String?
   dept         Dept?         @relation(fields: [deptId], references: [id])
   deptId       Int?          @map("dept_id")
   // 角色
@@ -127,6 +217,8 @@ model User {
   accessTokens AccessToken[]
   // LoginLogs
   loginLogs    LoginLog[]
+  // Storage
+  storages     Storage[]
 
   @@index([deptId])
   @@map("sys_user")

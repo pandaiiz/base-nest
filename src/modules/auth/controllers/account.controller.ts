@@ -13,7 +13,7 @@ import { PasswordUpdateDto } from '~/modules/user/dto/password.dto'
 import { AccountInfo } from '../../user/user.model'
 import { UserService } from '../../user/user.service'
 import { AuthService } from '../auth.service'
-import { AccountMenus, AccountUpdateDto } from '../dto/account.dto'
+import { AccountUpdateDto } from '../dto/account.dto'
 import { JwtAuthGuard } from '../guards/jwt-auth.guard'
 
 @ApiTags('Account - 账户模块')
@@ -44,7 +44,6 @@ export class AccountController {
 
   @Get('menus')
   @ApiOperation({ summary: '获取菜单列表' })
-  @ApiResult({ type: [AccountMenus] })
   @AllowAnon()
   async menu(@AuthUser() user: IAuthUser) {
     return this.authService.getMenus(user.uid)

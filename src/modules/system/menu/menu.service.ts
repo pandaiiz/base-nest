@@ -13,7 +13,7 @@ import { deleteEmptyChildren, generatorMenu, generatorRouters } from '~/utils'
 
 import { RoleService } from '../role/role.service'
 
-import { MenuDto, MenuQueryDto, MenuUpdateDto } from './menu.dto'
+import { MenuDto, MenuQueryDto } from './menu.dto'
 import { PrismaService } from 'nestjs-prisma'
 import { Menu } from '@prisma/client'
 
@@ -52,17 +52,17 @@ export class MenuService {
     return menus
   }
 
-  async create(menu: MenuDto): Promise<void> {
+  async create(menu: any): Promise<void> {
     const result = await this.prisma.menu.create({
       data: menu
     })
     this.sseService.noticeClientToUpdateMenusByMenuIds([result.id])
   }
 
-  async update(id: number, menu: MenuUpdateDto): Promise<void> {
+  async update(id: number, data: any): Promise<void> {
     await this.prisma.menu.update({
       where: { id },
-      data: menu
+      data
     })
     this.sseService.noticeClientToUpdateMenusByMenuIds([id])
   }
@@ -73,7 +73,6 @@ export class MenuService {
   async getMenus(uid: number) {
     const roleIds = await this.roleService.getRoleIdsByUser(uid)
     let menus: Menu[] = []
-    // let menus: MenuEntity[] = []
 
     if (isEmpty(roleIds)) return generatorRouters([])
 
@@ -102,11 +101,11 @@ export class MenuService {
    * 检查菜单创建规则是否符合
    */
   async check(dto: Partial<MenuDto>): Promise<void | never> {
-    if (dto.type === 2 && !dto.parentId) {
+    if (dto.type === 'ACCESS' && !dto.parentId) {
       // 无法直接创建权限，必须有parent
       throw new BusinessException(ErrorEnum.PERMISSION_REQUIRES_PARENT)
     }
-    if (dto.type === 1 && dto.parentId) {
+    if (dto.type === 'MENU' && dto.parentId) {
       const parent = await this.getMenuItemInfo(dto.parentId)
       if (isEmpty(parent)) throw new BusinessException(ErrorEnum.PARENT_MENU_NOT_FOUND)
 
@@ -132,7 +131,7 @@ export class MenuService {
     // }
     // const childMenus: any = [];
     for (const menu of menus) {
-      if (menu.type !== 2) {
+      if (menu.type !== 'ACCESS') {
         // 子目录下是菜单或目录，继续往下级查找
         const c = await this.findChildMenus(menu.id)
         allMenus.push(c)
@@ -184,7 +183,7 @@ export class MenuService {
             not: null
           },
           type: {
-            in: [1, 2]
+            in: ['CATALOG', 'ACCESS']
           }
         }
       })
@@ -201,7 +200,7 @@ export class MenuService {
             }
           },
           type: {
-            in: [1, 2]
+            in: ['CATALOG', 'ACCESS']
           },
           permission: {
             not: null
@@ -236,7 +235,7 @@ export class MenuService {
     if (online) {
       // 判断是否在线
       await this.redis.set(genAuthPermKey(uid), JSON.stringify(perms))
-      this.sseService.noticeClientToUpdateMenusByUserIds([uid])
+      await this.sseService.noticeClientToUpdateMenusByUserIds([uid])
     }
   }
 

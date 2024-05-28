@@ -11,7 +11,7 @@ import { FileUploadDto } from './upload.dto'
 import { UploadService } from './upload.service'
 
 export const permissions = definePermission('upload', {
-  UPLOAD: 'upload',
+  UPLOAD: 'upload'
 } as const)
 
 @ApiSecurityAuth()
@@ -25,28 +25,20 @@ export class UploadController {
   @ApiOperation({ summary: '上传' })
   @ApiConsumes('multipart/form-data')
   @ApiBody({
-    type: FileUploadDto,
+    type: FileUploadDto
   })
   async upload(@Req() req: FastifyRequest, @AuthUser() user: IAuthUser) {
-    if (!req.isMultipart())
-      throw new BadRequestException('Request is not multipart')
+    if (!req.isMultipart()) throw new BadRequestException('Request is not multipart')
 
     const file = await req.file()
-
-    // https://github.com/fastify/fastify-multipart
-    // const parts = req.files()
-    // for await (const part of parts)
-    //   console.log(part.file)
 
     try {
       const path = await this.uploadService.saveFile(file, user.uid)
 
       return {
-        filename: path,
+        filename: path
       }
-    }
-    catch (error) {
-      console.log(error)
+    } catch (error) {
       throw new BadRequestException('上传失败')
     }
   }

@@ -14,12 +14,12 @@ export const AuthStrategy = {
   JWT: 'jwt',
 
   GITHUB: 'github',
-  GOOGLE: 'google',
+  GOOGLE: 'google'
 } as const
 
 export const Roles = {
   ADMIN: 'admin',
-  USER: 'user',
+  USER: 'user'
   // GUEST: 'guest',
 } as const
 
