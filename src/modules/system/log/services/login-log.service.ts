@@ -1,20 +1,12 @@
 import { Injectable } from '@nestjs/common'
-import { InjectRepository } from '@nestjs/typeorm'
-
-import { Between, LessThan, Like, Repository } from 'typeorm'
-
-import UAParser from 'ua-parser-js'
-
-import { paginateRaw } from '~/helper/paginate'
-
+// import UAParser from 'ua-parser-js'
 import { getIpAddress } from '~/utils/ip.util'
 
-import { LoginLogQueryDto } from '../dto/log.dto'
-import { LoginLogEntity } from '../entities/login-log.entity'
-import { LoginLogInfo } from '../models/log.model'
+// import { LoginLogQueryDto } from '../dto/log.dto'
+// import { LoginLogInfo } from '../models/log.model'
 import { PrismaService } from 'nestjs-prisma'
 
-async function parseLoginLog(e: any, parser: UAParser): Promise<LoginLogInfo> {
+/*async function parseLoginLog(e: any, parser: UAParser): Promise<LoginLogInfo> {
   const uaResult = parser.setUA(e.login_log_ua).getResult()
 
   return {
@@ -26,15 +18,11 @@ async function parseLoginLog(e: any, parser: UAParser): Promise<LoginLogInfo> {
     username: e.user_username,
     time: e.login_log_created_at
   }
-}
+}*/
 
 @Injectable()
 export class LoginLogService {
-  constructor(
-    @InjectRepository(LoginLogEntity)
-    private loginLogRepository: Repository<LoginLogEntity>,
-    private prisma: PrismaService
-  ) {}
+  constructor(private prisma: PrismaService) {}
 
   async create(uid: number, ip: string, ua: string): Promise<void> {
     try {
@@ -52,8 +40,8 @@ export class LoginLogService {
     }
   }
 
-  async list({ page, pageSize, username, ip, address, time }: LoginLogQueryDto) {
-    const queryBuilder = await this.loginLogRepository
+  /*async list({ current, pageSize, username, ip, address, time }: LoginLogQueryDto) {
+    /!*const queryBuilder = await this.loginLogRepository
       .createQueryBuilder('login_log')
       .innerJoinAndSelect('login_log.user', 'user')
       .where({
@@ -79,14 +67,17 @@ export class LoginLogService {
     return {
       items: loginLogInfos,
       ...rest
-    }
-  }
+    }*!/
+    return {}
+  }*/
 
   async clearLog(): Promise<void> {
-    await this.loginLogRepository.clear()
+    await this.prisma.loginLog.deleteMany()
   }
 
-  async clearLogBeforeTime(time: Date): Promise<void> {
-    await this.loginLogRepository.delete({ createdAt: LessThan(time) })
-  }
+  /*  async clearLogBeforeTime(time: Date): Promise<void> {
+    await this.prisma.loginLog.deleteMany({
+      where: { createdAt: { lt: time } }
+    })
+  }*/
 }

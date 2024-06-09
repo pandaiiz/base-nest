@@ -10,18 +10,15 @@ import {
 } from '@nestjs/common'
 import { ApiOperation, ApiTags } from '@nestjs/swagger'
 
-import { ApiResult } from '~/common/decorators/api-result.decorator'
 import { IdParam } from '~/common/decorators/id-param.decorator'
 import { ApiSecurityAuth } from '~/common/decorators/swagger.decorator'
-import { PagerDto } from '~/common/dto/pager.dto'
 import { Perm, definePermission } from '~/modules/auth/decorators/permission.decorator'
-import { RoleEntity } from '~/modules/system/role/role.entity'
 
 import { MenuService } from '../menu/menu.service'
 
-import { RoleDto, RoleUpdateDto } from './role.dto'
-import { RoleInfo } from './role.model'
+import { RoleCreateDto, RoleQueryDto, RoleUpdateDto } from './role.dto'
 import { RoleService } from './role.service'
+import { generateQueryFilter } from '~/utils/generateQueryFilter.util'
 
 export const permissions = definePermission('system:role', {
   LIST: 'list',
@@ -42,15 +39,15 @@ export class RoleController {
 
   @Get()
   @ApiOperation({ summary: '获取角色列表' })
-  @ApiResult({ type: [RoleEntity], isPage: true })
   @Perm(permissions.LIST)
-  async list(@Query() dto: PagerDto & RoleDto) {
-    return this.roleService.findAll(dto)
+  async list(@Query() query: RoleQueryDto) {
+    const filterConfig = { contains: ['name', 'value'], equals: ['status'] }
+    const filter = generateQueryFilter(filterConfig, query)
+    return this.roleService.page(filter)
   }
 
   @Get(':id')
   @ApiOperation({ summary: '获取角色信息' })
-  @ApiResult({ type: RoleInfo })
   @Perm(permissions.READ)
   async info(@IdParam() id: number) {
     return this.roleService.info(id)
@@ -59,7 +56,7 @@ export class RoleController {
   @Post()
   @ApiOperation({ summary: '新增角色' })
   @Perm(permissions.CREATE)
-  async create(@Body() dto: RoleDto): Promise<void> {
+  async create(@Body() dto: RoleCreateDto): Promise<void> {
     await this.roleService.create(dto)
   }
 

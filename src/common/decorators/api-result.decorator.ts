@@ -6,10 +6,8 @@ import { ResOp } from '~/common/model/response.model'
 const baseTypeNames = ['String', 'Number', 'Boolean']
 
 function genBaseProp(type: Type<any>) {
-  if (baseTypeNames.includes(type.name))
-    return { type: type.name.toLocaleLowerCase() }
-  else
-    return { $ref: getSchemaPath(type) }
+  if (baseTypeNames.includes(type.name)) return { type: type.name.toLocaleLowerCase() }
+  else return { $ref: getSchemaPath(type) }
 }
 
 /**
@@ -18,7 +16,7 @@ function genBaseProp(type: Type<any>) {
 export function ApiResult<TModel extends Type<any>>({
   type,
   isPage,
-  status,
+  status
 }: {
   type?: TModel | TModel[]
   isPage?: boolean
@@ -33,7 +31,7 @@ export function ApiResult<TModel extends Type<any>>({
         properties: {
           items: {
             type: 'array',
-            items: { $ref: getSchemaPath(type[0]) },
+            items: { $ref: getSchemaPath(type[0]) }
           },
           meta: {
             type: 'object',
@@ -42,23 +40,20 @@ export function ApiResult<TModel extends Type<any>>({
               totalItems: { type: 'number', default: 0 },
               itemsPerPage: { type: 'number', default: 0 },
               totalPages: { type: 'number', default: 0 },
-              currentPage: { type: 'number', default: 0 },
-            },
-          },
-        },
+              currentPage: { type: 'number', default: 0 }
+            }
+          }
+        }
       }
-    }
-    else {
+    } else {
       prop = {
         type: 'array',
-        items: genBaseProp(type[0]),
+        items: genBaseProp(type[0])
       }
     }
-  }
-  else if (type) {
+  } else if (type) {
     prop = genBaseProp(type)
-  }
-  else {
+  } else {
     prop = { type: 'null', default: null }
   }
 
@@ -73,11 +68,11 @@ export function ApiResult<TModel extends Type<any>>({
           { $ref: getSchemaPath(ResOp) },
           {
             properties: {
-              data: prop,
-            },
-          },
-        ],
-      },
-    }),
+              data: prop
+            }
+          }
+        ]
+      }
+    })
   )
 }

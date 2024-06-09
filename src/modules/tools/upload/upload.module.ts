@@ -11,6 +11,6 @@ const services = [UploadService]
   imports: [forwardRef(() => StorageModule)],
   controllers: [UploadController],
   providers: [...services],
-  exports: [...services],
+  exports: [...services]
 })
 export class UploadModule {}

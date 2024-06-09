@@ -11,7 +11,6 @@ import {
 } from '@nestjs/common'
 import { ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger'
 
-import { ApiResult } from '~/common/decorators/api-result.decorator'
 import { IdParam } from '~/common/decorators/id-param.decorator'
 import { ApiSecurityAuth } from '~/common/decorators/swagger.decorator'
 import { MenuService } from '~/modules/system/menu/menu.service'
@@ -20,7 +19,6 @@ import { Perm, definePermission } from '../auth/decorators/permission.decorator'
 
 import { UserPasswordDto } from './dto/password.dto'
 import { UserDto, UserQueryDto, UserUpdateDto } from './dto/user.dto'
-import { UserEntity } from './user.entity'
 import { UserService } from './user.service'
 
 export const permissions = definePermission('system:user', {
@@ -44,7 +42,7 @@ export class UserController {
 
   @Get()
   @ApiOperation({ summary: '获取用户列表' })
-  @ApiResult({ type: [UserEntity], isPage: true })
+  // @ApiResult({ type: [User], isPage: true })
   @Perm(permissions.LIST)
   async list(@Query() dto: UserQueryDto) {
     return this.userService.list(dto)

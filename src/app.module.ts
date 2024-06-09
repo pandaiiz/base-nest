@@ -17,9 +17,7 @@ import { NetdiskModule } from './modules/netdisk/netdisk.module'
 import { SseModule } from './modules/sse/sse.module'
 import { SystemModule } from './modules/system/system.module'
 import { TasksModule } from './modules/tasks/tasks.module'
-import { TodoModule } from './modules/todo/todo.module'
 import { ToolsModule } from './modules/tools/tools.module'
-import { DatabaseModule } from './shared/database/database.module'
 
 @Module({
   imports: [
@@ -39,30 +37,22 @@ import { DatabaseModule } from './shared/database/database.module'
       })
     }),
     SharedModule,
-    DatabaseModule,
-
     AuthModule,
     SystemModule,
     TasksModule.forRoot(),
     ToolsModule,
     HealthModule,
     SseModule,
-    NetdiskModule,
-
+    NetdiskModule
     // biz
-
     // end biz
-
-    TodoModule
   ],
   providers: [
     { provide: APP_FILTER, useClass: AllExceptionsFilter },
-
     { provide: APP_INTERCEPTOR, useClass: ClassSerializerInterceptor },
     { provide: APP_INTERCEPTOR, useClass: TransformInterceptor },
     { provide: APP_INTERCEPTOR, useFactory: () => new TimeoutInterceptor(15 * 1000) },
     { provide: APP_INTERCEPTOR, useClass: IdempotenceInterceptor },
-
     { provide: APP_GUARD, useClass: JwtAuthGuard },
     { provide: APP_GUARD, useClass: RbacGuard },
     { provide: APP_GUARD, useClass: ThrottlerGuard }

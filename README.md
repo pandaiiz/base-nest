@@ -190,3 +190,6 @@ pnpm migration:revert
 ### LICENSE
 
 [MIT](LICENSE)
+
+docker run --restart=always -p 6379:6379 --name redis -d redis  --requirepass 123456
+docker run -d -p 5432:5432 --name postgresql -v pgdata:/var/lib/postgresql/data -e POSTGRES_PASSWORD=123456 postgres

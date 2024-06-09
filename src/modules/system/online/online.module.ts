@@ -12,13 +12,9 @@ import { OnlineService } from './online.service'
 const providers = [OnlineService]
 
 @Module({
-  imports: [
-    UserModule,
-    AuthModule,
-    forwardRef(() => SseModule),
-  ],
+  imports: [UserModule, AuthModule, forwardRef(() => SseModule)],
   controllers: [OnlineController],
   providers,
-  exports: [...providers],
+  exports: [...providers]
 })
 export class OnlineModule {}

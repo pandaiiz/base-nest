@@ -14,6 +14,5 @@ export const CronOnce: typeof Cron = (...rest): MethodDecorator => {
     // eslint-disable-next-line no-useless-call
     return Cron.call(null, ...rest)
 
-  const returnNothing: MethodDecorator = () => {}
-  return returnNothing
+  return () => {}
 }

@@ -3,8 +3,7 @@ import { ForbiddenException } from '@nestjs/common'
 import { envBoolean } from '~/global/env'
 
 import { uniqueSlash } from './tool.util'
-import { Menu } from '@prisma/client'
-import { RoleEntity } from '~/modules/system/role/role.entity'
+import { Menu, Role } from '@prisma/client'
 
 export interface RouteRecordRaw {
   id: number
@@ -126,7 +125,7 @@ function filterMenuToTable(menus: Menu[], parentMenu: Menu) {
       component?: string
       show?: number
       status?: number
-      roles?: RoleEntity[]
+      roles?: Role[]
       id?: number
       createdAt?: Date
       updatedAt?: Date

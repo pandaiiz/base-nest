@@ -11,7 +11,6 @@ import { ErrorEnum } from '~/constants/error-code.constant'
 
 import { genOnlineUserKey } from '~/helper/genRedisKey'
 import { AuthService } from '~/modules/auth/auth.service'
-import { AccessTokenEntity } from '~/modules/auth/entities/access-token.entity'
 
 import { TokenService } from '~/modules/auth/services/token.service'
 import { SseService } from '~/modules/sse/sse.service'
@@ -20,6 +19,7 @@ import { getIpAddress } from '~/utils'
 import { UserService } from '../../user/user.service'
 
 import { OnlineUserInfo } from './online.model'
+import { PrismaService } from 'nestjs-prisma'
 
 @Injectable()
 export class OnlineService {
@@ -29,6 +29,7 @@ export class OnlineService {
     private authService: AuthService,
     private tokenService: TokenService,
     private sseService: SseService,
+    private prisma: PrismaService
   ) {}
 
   /** 在线用户数量变动时，通知前端实时更新在线用户数量或列表, 3 秒内最多推送一次，避免频繁触发 */
@@ -38,21 +39,16 @@ export class OnlineService {
   }, 3000)
 
   async addOnlineUser(value: string, ip: string, ua: string) {
-    const token = await AccessTokenEntity.findOne({
+    // cache: true
+    const token = await this.prisma.accessToken.findFirst({
       where: { value },
-      relations: {
-        user: {
-          dept: true,
-        },
-      },
-      cache: true,
+      include: { user: { include: { dept: true } } }
     })
 
-    if (!token)
-      return
+    if (!token) return
 
-    const tokenPaload = await this.tokenService.verifyAccessToken(value)
-    const exp = ~~(tokenPaload.exp - Date.now() / 1000)
+    const tokenPayload = await this.tokenService.verifyAccessToken(value)
+    const exp = ~~(tokenPayload.exp - Date.now() / 1000)
     const parser = new UAParser()
     const uaResult = parser.setUA(ua).getResult()
     const address = await getIpAddress(ip)
@@ -66,20 +62,20 @@ export class OnlineService {
       os: `${`${uaResult.os.name ?? ''} `}${uaResult.os.version}`,
       browser: `${`${uaResult.browser.name ?? ''} `}${uaResult.browser.version}`,
       username: token.user.username,
-      time: token.created_at.toString(),
+      time: token.createdAt.toString()
     }
     await this.redis.set(genOnlineUserKey(token.id), JSON.stringify(result), 'EX', exp)
-    this.updateOnlineUserCount()
+    await this.updateOnlineUserCount()
   }
 
   async removeOnlineUser(value: string) {
-    const token = await AccessTokenEntity.findOne({
+    // cache: true
+    const token = await this.prisma.accessToken.findFirst({
       where: { value },
-      relations: ['user'],
-      cache: true,
+      include: { user: true }
     })
     await this.redis.del(genOnlineUserKey(token?.id))
-    this.updateOnlineUserCount()
+    await this.updateOnlineUserCount()
   }
 
   /** 移除所有在线用户 */
@@ -92,34 +88,35 @@ export class OnlineService {
    * 罗列在线用户列表
    */
   async listOnlineUser(value: string): Promise<OnlineUserInfo[]> {
-    const token = await AccessTokenEntity.findOne({
+    const token = await this.prisma.accessToken.findUnique({
       where: { value },
-      relations: ['user'],
-      cache: true,
+      include: { user: true }
     })
     const keys = await this.redis.keys(genOnlineUserKey('*'))
     const users = await this.redis.mget(keys)
     const rootUserId = await this.userService.findRootUserId()
 
-    return users.map((e) => {
-      const item = JSON.parse(e) as OnlineUserInfo
-      item.isCurrent = token.id === item.tokenId
-      item.disable = item.isCurrent || item.uid === rootUserId
-      return item
-    }).sort((a, b) => a.time > b.time ? -1 : 1)
+    return users
+      .map((e) => {
+        const item = JSON.parse(e) as OnlineUserInfo
+        item.isCurrent = token.id === item.tokenId
+        item.disable = item.isCurrent || item.uid === rootUserId
+        return item
+      })
+      .sort((a, b) => (a.time > b.time ? -1 : 1))
   }
 
   /**
    * 下线当前用户
    */
   async kickUser(tokenId: string, user: IAuthUser): Promise<void> {
-    const token = await AccessTokenEntity.findOne({
+    // cache: true
+    const token = await this.prisma.accessToken.findUnique({
       where: { id: tokenId },
-      relations: ['user'],
-      cache: true,
+      include: { user: true }
     })
-    if (!token)
-      return
+
+    if (!token) return
     const rootUserId = await this.userService.findRootUserId()
     const targetUid = token.user.id
     if (targetUid === rootUserId || targetUid === user.uid)

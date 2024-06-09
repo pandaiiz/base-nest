@@ -4,8 +4,7 @@ import {
   DiskHealthIndicator,
   HealthCheck,
   HttpHealthIndicator,
-  MemoryHealthIndicator,
-  TypeOrmHealthIndicator,
+  MemoryHealthIndicator
 } from '@nestjs/terminus'
 
 import { Perm, definePermission } from '../auth/decorators/permission.decorator'
@@ -15,7 +14,7 @@ export const PermissionHealth = definePermission('app:health', {
   DB: 'database',
   MH: 'memory-heap',
   MR: 'memory-rss',
-  DISK: 'disk',
+  DISK: 'disk'
 } as const)
 
 @ApiTags('Health - 健康检查')
@@ -23,9 +22,8 @@ export const PermissionHealth = definePermission('app:health', {
 export class HealthController {
   constructor(
     private http: HttpHealthIndicator,
-    private db: TypeOrmHealthIndicator,
     private memory: MemoryHealthIndicator,
-    private disk: DiskHealthIndicator,
+    private disk: DiskHealthIndicator
   ) {}
 
   @Get('network')
@@ -33,13 +31,6 @@ export class HealthController {
   @Perm(PermissionHealth.NETWORK)
   async checkNetwork() {
     return this.http.pingCheck('buqiyuan', 'https://buqiyuan.gitee.io/')
-  }
-
-  @Get('database')
-  @HealthCheck()
-  @Perm(PermissionHealth.DB)
-  async checkDatabase() {
-    return this.db.pingCheck('database')
   }
 
   @Get('memory-heap')
@@ -65,7 +56,7 @@ export class HealthController {
     return this.disk.checkStorage('disk', {
       // The used disk storage should not exceed 75% of the full disk size
       thresholdPercent: 0.75,
-      path: '/',
+      path: '/'
     })
   }
 }

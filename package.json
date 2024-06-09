@@ -10,7 +10,7 @@
   "scripts": {
     "prebuild": "rimraf dist",
     "build": "nest build",
-    "dev": "dotenv -e .env.development npm run start --watch",
+    "dev": "npm run start --watch",
     "dev:debug": "npm run start:debug",
     "repl": "npm run start -- --entryFile repl",
     "bundle": "rimraf out && npm run build && ncc build dist/main.js -o out -m -t && chmod +x out/index.js",

@@ -1,4 +1,3 @@
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 import { PrismaClient } from '@prisma/client'
 import { basicMenu } from './basic-menu'
 import { MD5 } from 'crypto-js'
@@ -18,13 +17,14 @@ const generateMenu = async () => {
 
     if (menu.children) {
       await prisma.menu.createMany({
-        data: menu.children.map((item) => ({
+        data: menu.children.map((item: any) => ({
           name: item.name,
           path: item.path,
           parentId: parent.id,
           type: 'MENU',
           permission: item.permission,
-          component: item.component
+          component: item.component,
+          show: item.show || 1
         }))
       })
     }

@@ -8,12 +8,10 @@ import Redis from 'ioredis'
 import { ISecurityConfig, SecurityConfig } from '~/config'
 import { genOnlineUserKey } from '~/helper/genRedisKey'
 import { RoleService } from '~/modules/system/role/role.service'
-import { UserEntity } from '~/modules/user/user.entity'
 import { generateUUID } from '~/utils'
 
-import { AccessTokenEntity } from '../entities/access-token.entity'
-import { RefreshTokenEntity } from '../entities/refresh-token.entity'
 import { PrismaService } from 'nestjs-prisma'
+import { AccessToken } from '@prisma/client'
 
 /**
  * 令牌服务
@@ -32,7 +30,7 @@ export class TokenService {
    * 根据accessToken刷新AccessToken与RefreshToken
    * @param accessToken
    */
-  async refreshToken(accessToken: AccessTokenEntity) {
+  async refreshToken(accessToken: any) {
     const { user, refreshToken } = accessToken
 
     if (refreshToken) {
@@ -53,9 +51,7 @@ export class TokenService {
   }
 
   generateJwtSign(payload: any) {
-    const jwtSign = this.jwtService.sign(payload)
-
-    return jwtSign
+    return this.jwtService.sign(payload)
   }
 
   async generateAccessToken(uid: number, roles: string[] = []) {
@@ -67,13 +63,7 @@ export class TokenService {
 
     const jwtSign = await this.jwtService.signAsync(payload)
 
-    // 生成accessToken
-    const accessToken = new AccessTokenEntity()
-    accessToken.value = jwtSign
-    accessToken.user = { id: uid } as UserEntity
-    accessToken.expired_at = dayjs().add(this.securityConfig.jwtExprire, 'second').toDate()
-
-    await this.prisma.accessToken.create({
+    const accessToken = await this.prisma.accessToken.create({
       data: {
         value: jwtSign,
         user: {
@@ -81,7 +71,7 @@ export class TokenService {
             id: uid
           }
         },
-        expiredAt: accessToken.expired_at
+        expiredAt: dayjs().add(this.securityConfig.jwtExprire, 'second').toDate()
       }
     })
 
@@ -101,7 +91,7 @@ export class TokenService {
    * @param accessToken
    * @param now
    */
-  async generateRefreshToken(accessToken: AccessTokenEntity, now: dayjs.Dayjs): Promise<string> {
+  async generateRefreshToken(accessToken: AccessToken, now: dayjs.Dayjs): Promise<string> {
     const refreshTokenPayload = {
       uuid: generateUUID()
     }
@@ -110,15 +100,10 @@ export class TokenService {
       secret: this.securityConfig.refreshSecret
     })
 
-    const refreshToken = new RefreshTokenEntity()
-    refreshToken.value = refreshTokenSign
-    refreshToken.expired_at = now.add(this.securityConfig.refreshExpire, 'second').toDate()
-    refreshToken.accessToken = accessToken
-
-    this.prisma.refreshToken.create({
+    await this.prisma.refreshToken.create({
       data: {
         value: refreshTokenSign,
-        expiredAt: refreshToken.expired_at,
+        expiredAt: now.add(this.securityConfig.refreshExpire, 'second').toDate(),
         accessToken: {
           connect: {
             id: accessToken.id
@@ -126,8 +111,6 @@ export class TokenService {
         }
       }
     })
-
-    // await refreshToken.save()
 
     return refreshTokenSign
   }
@@ -140,10 +123,9 @@ export class TokenService {
     let isValid = false
     try {
       await this.verifyAccessToken(value)
-      const res = await AccessTokenEntity.findOne({
+      const res = await this.prisma.accessToken.findUnique({
         where: { value },
-        relations: ['user', 'refreshToken'],
-        cache: true
+        include: { user: true, refreshToken: true }
       })
       isValid = Boolean(res)
     } catch (error) {}
@@ -156,12 +138,12 @@ export class TokenService {
    * @param value
    */
   async removeAccessToken(value: string) {
-    const accessToken = await AccessTokenEntity.findOne({
+    const accessToken = await this.prisma.accessToken.findUnique({
       where: { value }
     })
     if (accessToken) {
       this.redis.del(genOnlineUserKey(accessToken.id))
-      await accessToken.remove()
+      await this.prisma.accessToken.delete({ where: { id: accessToken.id } })
     }
   }
 
@@ -170,14 +152,18 @@ export class TokenService {
    * @param value
    */
   async removeRefreshToken(value: string) {
-    const refreshToken = await RefreshTokenEntity.findOne({
+    const refreshToken = await this.prisma.refreshToken.findUnique({
       where: { value },
-      relations: ['accessToken']
+      include: {
+        accessToken: true
+      }
     })
     if (refreshToken) {
       if (refreshToken.accessToken) this.redis.del(genOnlineUserKey(refreshToken.accessToken.id))
-      await refreshToken.accessToken.remove()
-      await refreshToken.remove()
+      this.prisma.$transaction([
+        this.prisma.refreshToken.delete({ where: { id: refreshToken.id } }),
+        this.prisma.accessToken.delete({ where: { id: refreshToken.accessToken.id } })
+      ])
     }
   }
 

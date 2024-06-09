@@ -10,18 +10,12 @@ export class FileUploadDto {
   @IsDefined()
   @IsFile(
     {
-      mimetypes: [
-        'image/png',
-        'image/gif',
-        'image/jpeg',
-        'image/webp',
-        'image/svg+xml',
-      ],
-      fileSize: 1024 * 1024 * 10,
+      mimetypes: ['image/png', 'image/gif', 'image/jpeg', 'image/webp', 'image/svg+xml'],
+      fileSize: 1024 * 1024 * 10
     },
     {
-      message: '文件类型不正确',
-    },
+      message: '文件类型不正确'
+    }
   )
   file: MultipartFile
 }

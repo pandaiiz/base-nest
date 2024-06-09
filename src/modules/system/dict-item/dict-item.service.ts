@@ -1,100 +1,19 @@
 import { Injectable } from '@nestjs/common'
-import { InjectRepository } from '@nestjs/typeorm'
-
-import { Like, Repository } from 'typeorm'
-
+import { DictItem } from '@prisma/client'
+import { PrismaService } from 'nestjs-prisma'
+import { CrudService } from '~/helper/crud/crud.service'
 import { BusinessException } from '~/common/exceptions/biz.exception'
 import { ErrorEnum } from '~/constants/error-code.constant'
-import { paginate } from '~/helper/paginate'
-import { Pagination } from '~/helper/paginate/pagination'
-import { DictItemEntity } from '~/modules/system/dict-item/dict-item.entity'
-
-import { DictItemDto, DictItemQueryDto } from './dict-item.dto'
-import { PrismaService } from 'nestjs-prisma'
 
 @Injectable()
-export class DictItemService {
-  constructor(
-    @InjectRepository(DictItemEntity)
-    private dictItemRepository: Repository<DictItemEntity>,
-    private prisma: PrismaService
-  ) {}
-
-  /**
-   * 罗列所有配置
-   */
-  async page({
-    page,
-    pageSize,
-    label,
-    value,
-    typeId
-  }: DictItemQueryDto): Promise<Pagination<DictItemEntity>> {
-    // await this.prisma
-    const queryBuilder = this.dictItemRepository
-      .createQueryBuilder('dict_item')
-      .orderBy({ orderNo: 'ASC' })
-      .where({
-        ...(label && { label: Like(`%${label}%`) }),
-        ...(value && { value: Like(`%${value}%`) }),
-        type: {
-          id: typeId
-        }
-      })
-
-    return paginate(queryBuilder, { page, pageSize })
+export class DictItemService extends CrudService<DictItem> {
+  constructor(prisma: PrismaService) {
+    super(prisma, prisma.dictItem)
   }
 
-  /**
-   * 获取参数总数
-   */
-  async countConfigList(): Promise<number> {
-    return this.dictItemRepository.count()
-  }
-
-  /**
-   * 新增
-   */
-  async create(dto: DictItemDto): Promise<void> {
-    const { typeId, ...rest } = dto
-    await this.dictItemRepository.insert({
-      ...rest,
-      type: {
-        id: typeId
-      }
-    })
-  }
-
-  /**
-   * 更新
-   */
-  async update(id: number, dto: Partial<DictItemDto>): Promise<void> {
-    const { typeId, ...rest } = dto
-    await this.dictItemRepository.update(id, {
-      ...rest,
-      type: {
-        id: typeId
-      }
-    })
-  }
-
-  /**
-   * 删除
-   */
-  async delete(id: number): Promise<void> {
-    await this.dictItemRepository.delete(id)
-  }
-
-  /**
-   * 查询单个
-   */
-  async findOne(id: number): Promise<DictItemEntity> {
-    return this.dictItemRepository.findOneBy({ id })
-  }
-
-  async isExistKey(dto: DictItemDto): Promise<void | never> {
+  async isExistKey(dto: DictItem): Promise<void | never> {
     const { value, typeId } = dto
-    const result = await this.dictItemRepository.findOneBy({ value, type: { id: typeId } })
+    const result = await this.prisma.dictItem.findFirst({ where: { value, type: { id: typeId } } })
     if (result) throw new BusinessException(ErrorEnum.DICT_NAME_EXISTS)
   }
 }

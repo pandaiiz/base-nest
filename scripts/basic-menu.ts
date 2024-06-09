@@ -30,13 +30,14 @@ export const basicMenu: any = [
       {
         name: '字典管理',
         path: '/system/dict/type',
-        component: 'system/dict-item/index',
-        permission: 'system:dict-type:list'
+        component: 'system/dict-type/index',
+        permission: 'system:dict-type:list',
+        show: 0
       },
       {
         name: '字典项管理',
         path: '/system/dict/type/:id',
-        component: 'system/dict-type/index',
+        component: 'system/dict-item/index',
         permission: 'system:dict-item:list'
       },
       {

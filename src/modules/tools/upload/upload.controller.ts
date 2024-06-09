@@ -29,15 +29,10 @@ export class UploadController {
   })
   async upload(@Req() req: FastifyRequest, @AuthUser() user: IAuthUser) {
     if (!req.isMultipart()) throw new BadRequestException('Request is not multipart')
-
     const file = await req.file()
-
     try {
       const path = await this.uploadService.saveFile(file, user.uid)
-
-      return {
-        filename: path
-      }
+      return { filename: path }
     } catch (error) {
       throw new BadRequestException('上传失败')
     }

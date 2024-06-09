@@ -4,7 +4,7 @@ import AccessTokenModel from './AccessToken.model'
 
 export default createModel((RefreshTokenModel) => {
   RefreshTokenModel.mixin(BaseUuidMixin)
-    .string('value', { raw: '@database.VarChar(500)' })
+    .string('value', { raw: '@database.VarChar(500)', unique: true })
     .dateTime('expiredAt', { map: 'expired_at', comments: ['// 令牌过期时间'] })
     .relation('accessToken', AccessTokenModel, {
       fields: ['accessTokenId'],

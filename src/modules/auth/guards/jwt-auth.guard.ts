@@ -105,11 +105,9 @@ export class JwtAuthGuard extends AuthGuard(AuthStrategy.JWT) {
     return result
   }
 
-  handleRequest(err: any, user: any, info: any) {
-    console.log(info)
+  handleRequest(err: any, user: any) {
     // You can throw an exception based on either "info" or "err" arguments
     if (err || !user) throw err || new UnauthorizedException()
-
     return user
   }
 }

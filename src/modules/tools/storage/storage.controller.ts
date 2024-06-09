@@ -5,7 +5,7 @@ import { ApiOperation, ApiTags } from '@nestjs/swagger'
 import { ApiResult } from '~/common/decorators/api-result.decorator'
 import { ApiSecurityAuth } from '~/common/decorators/swagger.decorator'
 
-import { Pagination } from '~/helper/paginate/pagination'
+import { Pagination } from '~/helper/pagination'
 
 import { Perm, definePermission } from '~/modules/auth/decorators/permission.decorator'
 
@@ -15,7 +15,7 @@ import { StorageService } from './storage.service'
 
 export const permissions = definePermission('tool:storage', {
   LIST: 'list',
-  DELETE: 'delete',
+  DELETE: 'delete'
 } as const)
 
 @ApiTags('Tools - 存储模块')

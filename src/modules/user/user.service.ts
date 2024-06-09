@@ -1,36 +1,24 @@
 import { InjectRedis } from '@liaoliaots/nestjs-redis'
 import { BadRequestException, Injectable } from '@nestjs/common'
-import { InjectEntityManager, InjectRepository } from '@nestjs/typeorm'
 import Redis from 'ioredis'
 import { isEmpty, isNil } from 'lodash'
-
-import { EntityManager, In, Repository } from 'typeorm'
-
 import { BusinessException } from '~/common/exceptions/biz.exception'
 import { ErrorEnum } from '~/constants/error-code.constant'
-import { ROOT_ROLE_ID, SYS_USER_INITPASSWORD } from '~/constants/system.constant'
+import { ROOT_ROLE_ID } from '~/constants/system.constant'
 import {
-  genAuthPVKey,
   genAuthPermKey,
+  genAuthPVKey,
   genAuthTokenKey,
   genOnlineUserKey
 } from '~/helper/genRedisKey'
 
 import { AccountUpdateDto } from '~/modules/auth/dto/account.dto'
 import { RegisterDto } from '~/modules/auth/dto/auth.dto'
-import { QQService } from '~/shared/helper/qq.service'
 
 import { md5, randomValue } from '~/utils'
-
-import { AccessTokenEntity } from '../auth/entities/access-token.entity'
-import { DeptEntity } from '../system/dept/dept.entity'
-import { ParamConfigService } from '../system/param-config/param-config.service'
-import { RoleEntity } from '../system/role/role.entity'
-
 import { UserStatus } from './constant'
 import { PasswordUpdateDto } from './dto/password.dto'
 import { UserDto, UserQueryDto, UserUpdateDto } from './dto/user.dto'
-import { UserEntity } from './user.entity'
 import { AccountInfo } from './user.model'
 import { PrismaService } from 'nestjs-prisma'
 import { User } from '@prisma/client'
@@ -40,22 +28,12 @@ export class UserService {
   constructor(
     @InjectRedis()
     private readonly redis: Redis,
-    @InjectRepository(UserEntity)
-    private readonly userRepository: Repository<UserEntity>,
-    @InjectRepository(RoleEntity)
-    private readonly roleRepository: Repository<RoleEntity>,
-    @InjectEntityManager() private entityManager: EntityManager,
-    private readonly paramConfigService: ParamConfigService,
-    private readonly qqService: QQService,
     private prisma: PrismaService
   ) {}
 
   async findUserById(id: number): Promise<User | undefined> {
     return this.prisma.user.findUnique({
-      where: {
-        id,
-        status: UserStatus.Enabled
-      }
+      where: { id, status: UserStatus.Enabled }
     })
   }
 
@@ -74,14 +52,11 @@ export class UserService {
    */
   async getAccountInfo(uid: number): Promise<AccountInfo> {
     const user = await this.prisma.user.findUnique({
-      where: {
-        id: uid
-      }
+      where: { id: uid }
     })
     if (isEmpty(user)) throw new BusinessException(ErrorEnum.USER_NOT_FOUND)
     delete user?.salt
     delete user?.password
-
     return user
   }
 
@@ -89,7 +64,7 @@ export class UserService {
    * 更新个人信息
    */
   async updateAccountInfo(uid: number, info: AccountUpdateDto): Promise<void> {
-    const user = await this.userRepository.findOneBy({ id: uid })
+    const user = await this.prisma.user.findUnique({ where: { id: uid } })
     if (isEmpty(user)) throw new BusinessException(ErrorEnum.USER_NOT_FOUND)
 
     const data = {
@@ -100,28 +75,21 @@ export class UserService {
       ...(info.qq ? { qq: info.qq } : null),
       ...(info.remark ? { remark: info.remark } : null)
     }
-
-    if (!info.avatar && info.qq) {
-      // 如果qq不等于原qq，则更新qq头像
-      if (info.qq !== user.qq) data.avatar = await this.qqService.getAvater(info.qq)
-    }
-
-    await this.userRepository.update(uid, data)
+    await this.prisma.user.update({ where: { id: uid }, data })
   }
 
   /**
    * 更改密码
    */
   async updatePassword(uid: number, dto: PasswordUpdateDto): Promise<void> {
-    const user = await this.userRepository.findOneBy({ id: uid })
+    const user = await this.prisma.user.findUnique({ where: { id: uid } })
     if (isEmpty(user)) throw new BusinessException(ErrorEnum.USER_NOT_FOUND)
 
     const comparePassword = md5(`${dto.oldPassword}${user.salt}`)
     // 原密码不一致，不允许更改
     if (user.password !== comparePassword) throw new BusinessException(ErrorEnum.PASSWORD_MISMATCH)
-
     const password = md5(`${dto.newPassword}${user.salt}`)
-    await this.userRepository.update({ id: uid }, { password })
+    await this.prisma.user.update({ where: { id: uid }, data: { password } })
     await this.upgradePasswordV(user.id)
   }
 
@@ -137,14 +105,9 @@ export class UserService {
 
     const newPassword = md5(`${password}${user.salt}`)
     await this.prisma.user.update({
-      where: {
-        id: uid
-      },
-      data: {
-        password: newPassword
-      }
+      where: { id: uid },
+      data: { password: newPassword }
     })
-    // await this.userRepository.update({ id: uid }, { password: newPassword })
     await this.upgradePasswordV(user.id)
   }
 
@@ -152,31 +115,25 @@ export class UserService {
    * 增加系统用户，如果返回false则表示已存在该用户
    */
   async create({ username, password, roleIds, deptId, ...data }: UserDto): Promise<void> {
-    const exists = await this.userRepository.findOneBy({
-      username
-    })
+    const exists = await this.prisma.user.findUnique({ where: { username } })
     if (!isEmpty(exists)) throw new BusinessException(ErrorEnum.SYSTEM_USER_EXISTS)
-
-    await this.entityManager.transaction(async (manager) => {
-      const salt = randomValue(32)
-
-      if (!password) {
-        const initPassword = await this.paramConfigService.findValueByKey(SYS_USER_INITPASSWORD)
-        password = md5(`${initPassword ?? '123456'}${salt}`)
-      } else {
-        password = md5(`${password ?? '123456'}${salt}`)
-      }
-      const u = manager.create(UserEntity, {
+    const salt = randomValue(32)
+    if (!password) {
+      password = md5(`123456${salt}`)
+    } else {
+      password = md5(`${password ?? '123456'}${salt}`)
+    }
+    await this.prisma.user.create({
+      data: {
         username,
         password,
+        salt,
         ...data,
-        salt: salt,
-        roles: await this.roleRepository.findBy({ id: In(roleIds) }),
-        dept: await DeptEntity.findOneBy({ id: deptId })
-      })
-
-      const result = await manager.save(u)
-      return result
+        roles: {
+          connect: roleIds.map((id) => ({ id }))
+        },
+        deptId
+      }
     })
   }
 
@@ -187,51 +144,41 @@ export class UserService {
     id: number,
     { password, deptId, roleIds, status, ...data }: UserUpdateDto
   ): Promise<void> {
-    await this.entityManager.transaction(async (manager) => {
-      if (password) await this.forceUpdatePassword(id, password)
-
-      await manager.update(UserEntity, id, {
+    if (password) await this.forceUpdatePassword(id, password)
+    this.prisma.user.update({
+      where: { id },
+      data: {
         ...data,
-        status
-      })
-
-      const user = await this.userRepository
-        .createQueryBuilder('user')
-        .leftJoinAndSelect('user.roles', 'roles')
-        .leftJoinAndSelect('user.dept', 'dept')
-        .where('user.id = :id', { id })
-        .getOne()
-
-      await manager
-        .createQueryBuilder()
-        .relation(UserEntity, 'roles')
-        .of(id)
-        .addAndRemove(roleIds, user.roles)
-
-      await manager.createQueryBuilder().relation(UserEntity, 'dept').of(id).set(deptId)
-
-      if (status === 0) {
-        // 禁用状态
-        await this.forbidden(id)
+        status,
+        roles: {
+          set: roleIds.map((id) => ({ id }))
+        },
+        deptId
       }
     })
+    if (status === 0) {
+      // 禁用状态
+      await this.forbidden(id)
+    }
   }
 
   /**
    * 查找用户信息
    * @param id 用户id
    */
-  async info(id: number): Promise<UserEntity> {
-    const user = await this.userRepository
-      .createQueryBuilder('user')
-      .leftJoinAndSelect('user.roles', 'roles')
-      .leftJoinAndSelect('user.dept', 'dept')
-      .where('user.id = :id', { id })
-      .getOne()
+  async info(id: number): Promise<User> {
+    const user = await this.prisma.user.findUnique({
+      where: {
+        id
+      },
+      include: {
+        roles: true,
+        dept: true
+      }
+    })
 
     delete user.password
     delete user.salt
-
     return user
   }
 
@@ -269,36 +216,15 @@ export class UserService {
   /**
    * 查询用户列表
    */
-  /* async list({
-    page,
+
+  async list({
+    current,
     pageSize,
     username,
     nickname,
     deptId,
-    email,
     status
-  }: UserQueryDto): Promise<Pagination<UserEntity>> {
-    const queryBuilder = this.userRepository
-      .createQueryBuilder('user')
-      .leftJoinAndSelect('user.dept', 'dept')
-      .leftJoinAndSelect('user.roles', 'role')
-      // .where('user.id NOT IN (:...ids)', { ids: [rootUserId, uid] })
-      .where({
-        ...(username ? { username: Like(`%${username}%`) } : null),
-        ...(nickname ? { nickname: Like(`%${nickname}%`) } : null),
-        ...(email ? { email: Like(`%${email}%`) } : null),
-        ...(status ? { status } : null)
-      })
-
-    if (deptId) queryBuilder.andWhere('dept.id = :deptId', { deptId })
-
-    return paginate<UserEntity>(queryBuilder, {
-      page,
-      pageSize
-    })
-  } */
-
-  async list({ page, pageSize, username, nickname, deptId, status }: UserQueryDto): Promise<any> {
+  }: UserQueryDto): Promise<any> {
     const query = {
       where: {
         username: { contains: username },
@@ -306,7 +232,7 @@ export class UserService {
         status: status && +status,
         deptId: deptId && +deptId
       },
-      skip: (+page - 1) * +pageSize,
+      skip: (+current - 1) * +pageSize,
       take: +pageSize
     }
     const [list, total] = await this.prisma.$transaction([
@@ -324,7 +250,7 @@ export class UserService {
       list,
       pagination: {
         total,
-        currentPage: page,
+        currentPage: current,
         pageSize
       }
     }
@@ -338,7 +264,7 @@ export class UserService {
     await this.redis.del(genAuthTokenKey(uid))
     await this.redis.del(genAuthPermKey(uid))
     if (accessToken) {
-      const token = await AccessTokenEntity.findOne({
+      const token = await this.prisma.accessToken.findUnique({
         where: { value: accessToken }
       })
       this.redis.del(genOnlineUserKey(token.id))
@@ -377,7 +303,7 @@ export class UserService {
    * 判断用户名是否存在
    */
   async exist(username: string) {
-    const user = await this.userRepository.findOneBy({ username })
+    const user = await this.prisma.user.findUnique({ where: { username } })
     if (isNil(user)) throw new BusinessException(ErrorEnum.SYSTEM_USER_EXISTS)
 
     return true
@@ -386,25 +312,20 @@ export class UserService {
   /**
    * 注册
    */
-  async register({ username, ...data }: RegisterDto): Promise<void> {
+  async register({ username, ...data }: RegisterDto): Promise<User> {
     const exists = await this.prisma.user.findUnique({ where: { username } })
     if (!isEmpty(exists)) throw new BusinessException(ErrorEnum.SYSTEM_USER_EXISTS)
 
-    await this.entityManager.transaction(async (manager) => {
-      const salt = randomValue(32)
+    const salt = randomValue(32)
 
-      const password = md5(`${data.password ?? 'a123456'}${salt}`)
-
-      const u = manager.create(UserEntity, {
+    const password = md5(`${data.password ?? 'a123456'}${salt}`)
+    return this.prisma.user.create({
+      data: {
         username,
         password,
         status: 1,
         salt: salt
-      })
-
-      const user = await manager.save(u)
-
-      return user
+      }
     })
   }
 }

@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common'
 
 import { LoginLogService } from '~/modules/system/log/services/login-log.service'
-import { TaskLogService } from '~/modules/system/log/services/task-log.service'
 
 import { Mission } from '../mission.decorator'
 
@@ -11,16 +10,9 @@ import { Mission } from '../mission.decorator'
 @Injectable()
 @Mission()
 export class LogClearJob {
-  constructor(
-    private loginLogService: LoginLogService,
-    private taskLogService: TaskLogService,
-  ) {}
+  constructor(private loginLogService: LoginLogService) {}
 
   async clearLoginLog(): Promise<void> {
     await this.loginLogService.clearLog()
-  }
-
-  async clearTaskLog(): Promise<void> {
-    await this.taskLogService.clearLog()
   }
 }

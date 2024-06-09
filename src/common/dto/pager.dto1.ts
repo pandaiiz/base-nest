@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger'
 import { Expose, Transform } from 'class-transformer'
-import { IsInt, IsOptional, Max, Min } from 'class-validator'
+import { Allow, IsEnum, IsInt, IsOptional, IsString, Max, Min } from 'class-validator'
 
 export enum Order {
   ASC = 'ASC',
@@ -16,10 +16,10 @@ export class PagerDto {
   @Transform(({ value: val }) => (val ? Number.parseInt(val) : 1), {
     toClassOnly: true
   })
-  current?: number
+  page?: number
 
-  @ApiProperty({ minimum: -1, maximum: 100, default: 10 })
-  @Min(-1)
+  @ApiProperty({ minimum: 1, maximum: 100, default: 10 })
+  @Min(1)
   @Max(100)
   @IsInt()
   @IsOptional({ always: true })
@@ -29,5 +29,18 @@ export class PagerDto {
   })
   pageSize?: number
 
-  where?: any
+  @ApiProperty()
+  @IsString()
+  @IsOptional()
+  field?: string
+  // | keyof T
+
+  @ApiProperty({ enum: Order })
+  @IsEnum(Order)
+  @IsOptional()
+  @Transform(({ value }) => (value === 'asc' ? Order.ASC : Order.DESC))
+  order?: Order
+
+  @Allow()
+  _t?: number
 }

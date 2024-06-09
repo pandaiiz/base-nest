@@ -8,9 +8,8 @@ export class LoginDto {
   @MinLength(4)
   username: string
 
-  @ApiProperty({ description: '密码', example: 'a123456' })
+  @ApiProperty({ description: '密码', example: '123456' })
   @IsString()
-  @Matches(/^\S*(?=\S{6,})(?=\S*\d)(?=\S*[A-Za-z])\S*$/)
   @MinLength(6)
   password: string
 }

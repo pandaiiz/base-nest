@@ -5,7 +5,7 @@ import RefreshTokenModel from './RefreshToken.model'
 
 export default createModel((AccessTokenModel) => {
   AccessTokenModel.mixin(BaseUuidMixin)
-    .string('value', { raw: '@database.VarChar(500)' })
+    .string('value', { raw: '@database.VarChar(500)', unique: true })
     .dateTime('expiredAt', { map: 'expired_at', comments: ['// 令牌过期时间'] })
     // 用户和token是一对多关系
     .relation('user', UserModel, { fields: ['userId'], references: ['id'], comments: ['// 用户'] })

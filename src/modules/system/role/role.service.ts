@@ -1,13 +1,11 @@
 import { Injectable } from '@nestjs/common'
 import { isEmpty } from 'lodash'
-
-import { PagerDto } from '~/common/dto/pager.dto'
 import { ROOT_ROLE_ID } from '~/constants/system.constant'
-// import { paginate } from '~/helper/paginate'
-// import { Pagination } from '~/helper/paginate/pagination'
 
-import { RoleDto, RoleUpdateDto } from './role.dto'
+import { RoleCreateDto, RoleUpdateDto } from './role.dto'
 import { PrismaService } from 'nestjs-prisma'
+import { Pagination } from '~/helper/pagination'
+import { Role } from '@prisma/client'
 
 @Injectable()
 export class RoleService {
@@ -16,29 +14,23 @@ export class RoleService {
   /**
    * 列举所有角色：除去超级管理员
    */
-  async findAll({ page, pageSize, status, name, value }: PagerDto & RoleDto): Promise<any> {
-    const query = {
-      where: {
-        name: { contains: name },
-        value: { contains: value },
-        status: status && +status
-      },
-      skip: (+page - 1) * +pageSize,
-      take: +pageSize
+  async page(query: any): Promise<Pagination<Role> | Role[]> {
+    const { current, pageSize, where } = query
+    if (+pageSize === -1) {
+      return this.prisma.role.findMany({
+        where: { id: { not: ROOT_ROLE_ID } }
+      })
     }
-    const [list, total] = await this.prisma.$transaction([
-      this.prisma.role.findMany(query),
-      this.prisma.role.count(query)
-    ])
 
-    return {
-      list,
-      pagination: {
-        total,
-        currentPage: page,
-        pageSize
-      }
-    }
+    console.log(where)
+
+    const skip = (+current - 1) * +pageSize
+    const take = +pageSize
+    const [data, total] = await this.prisma.$transaction([
+      this.prisma.role.findMany({ skip, take, where }),
+      this.prisma.role.count()
+    ])
+    return new Pagination<Role>(data, total, current, pageSize)
   }
 
   /**
@@ -70,7 +62,7 @@ export class RoleService {
   /**
    * 增加角色
    */
-  async create({ menuIds, ...data }: RoleDto): Promise<{ roleId: number }> {
+  async create({ menuIds, ...data }: RoleCreateDto): Promise<{ roleId: number }> {
     const role = await this.prisma.role.create({
       data: {
         ...data,

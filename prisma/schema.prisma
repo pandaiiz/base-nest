@@ -228,7 +228,7 @@ model RefreshToken {
   id            String      @id @default(uuid()) @database.Uuid
   createdAt     DateTime    @default(now()) @map("created_at")
   updatedAt     DateTime    @updatedAt @map("updated_at")
-  value         String      @database.VarChar(500)
+  value         String      @unique @database.VarChar(500)
   // 令牌过期时间
   expiredAt     DateTime    @map("expired_at")
   // 刷新令牌
@@ -243,7 +243,7 @@ model AccessToken {
   id           String        @id @default(uuid()) @database.Uuid
   createdAt    DateTime      @default(now()) @map("created_at")
   updatedAt    DateTime      @updatedAt @map("updated_at")
-  value        String        @database.VarChar(500)
+  value        String        @unique @database.VarChar(500)
   // 令牌过期时间
   expiredAt    DateTime      @map("expired_at")
   // 用户
@@ -254,4 +254,42 @@ model AccessToken {
 
   @@index([userId])
   @@map("user_access_tokens")
+}
+
+model DictType {
+  id        Int        @id @default(autoincrement())
+  createdAt DateTime   @default(now()) @map("created_at")
+  updatedAt DateTime   @updatedAt @map("updated_at")
+  // 字典名称
+  name      String     @unique
+  // 字典编码
+  code      String     @unique
+  // 状态
+  status    Int?       @default(0)
+  // 备注
+  remark    String?
+  sort      Int?       @default(0)
+  // 值列表
+  items     DictItem[]
+
+  @@map("sys_dict_type")
+}
+
+model DictItem {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  // 字典项键名
+  label     String
+  // 字典项值
+  value     String
+  // 状态
+  status    Int?     @default(0)
+  // 备注
+  remark    String?
+  sort      Int?     @default(0)
+  type      DictType @relation(fields: [typeId], references: [id])
+  typeId    Int      @map("type_id")
+
+  @@map("sys_dict_item")
 }
