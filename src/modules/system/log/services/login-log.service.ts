@@ -40,8 +40,9 @@ export class LoginLogService {
     }
   }
 
-  /*async list({ current, pageSize, username, ip, address, time }: LoginLogQueryDto) {
-    /!*const queryBuilder = await this.loginLogRepository
+  async list() {
+    // async list({ current, pageSize, username, ip, address, time }: LoginLogQueryDto) {
+    /*const queryBuilder = await this.loginLogRepository
       .createQueryBuilder('login_log')
       .innerJoinAndSelect('login_log.user', 'user')
       .where({
@@ -67,9 +68,9 @@ export class LoginLogService {
     return {
       items: loginLogInfos,
       ...rest
-    }*!/
+    }*/
     return {}
-  }*/
+  }
 
   async clearLog(): Promise<void> {
     await this.prisma.loginLog.deleteMany()

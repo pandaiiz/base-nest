@@ -1,11 +1,11 @@
-import { Controller, Get, Query } from '@nestjs/common'
+import { Controller, Get } from '@nestjs/common'
 import { ApiOperation, ApiTags } from '@nestjs/swagger'
 
 import { ApiResult } from '~/common/decorators/api-result.decorator'
 import { ApiSecurityAuth } from '~/common/decorators/swagger.decorator'
 import { Perm, definePermission } from '~/modules/auth/decorators/permission.decorator'
 
-import { LoginLogQueryDto } from './dto/log.dto'
+// import { LoginLogQueryDto } from './dto/log.dto'
 import { LoginLogInfo } from './models/log.model'
 import { LoginLogService } from './services/login-log.service'
 
@@ -25,8 +25,10 @@ export class LogController {
   @ApiOperation({ summary: '查询登录日志列表' })
   @ApiResult({ type: [LoginLogInfo], isPage: true })
   @Perm(permissions.TaskList)
-  async loginLogPage(@Query() dto: LoginLogQueryDto): Promise<any> {
+  async loginLogPage(): Promise<any> {
+    // async loginLogPage(@Query() dto: LoginLogQueryDto): Promise<any> {
     // ): Promise<Index<LoginLogInfo>> {
-    return this.loginLogService.list(dto)
+    return this.loginLogService.list()
+    // return this.loginLogService.list(dto)
   }
 }

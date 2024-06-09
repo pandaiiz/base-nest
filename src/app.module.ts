@@ -18,6 +18,7 @@ import { SseModule } from './modules/sse/sse.module'
 import { SystemModule } from './modules/system/system.module'
 import { TasksModule } from './modules/tasks/tasks.module'
 import { ToolsModule } from './modules/tools/tools.module'
+import { RelationshipModule } from '~/modules/relationship/relationship.module'
 
 @Module({
   imports: [
@@ -39,6 +40,7 @@ import { ToolsModule } from './modules/tools/tools.module'
     SharedModule,
     AuthModule,
     SystemModule,
+    RelationshipModule,
     TasksModule.forRoot(),
     ToolsModule,
     HealthModule,
