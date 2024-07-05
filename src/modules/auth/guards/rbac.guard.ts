@@ -46,8 +46,10 @@ export class RbacGuard implements CanActivate {
     const allPermissions =
       (await this.authService.getPermissionsCache(user.uid)) ??
       (await this.authService.getPermissions(user.uid))
-    // console.log(allPermissions)
     let canNext = false
+
+    console.log(allPermissions)
+    console.log(payloadPermission)
 
     // handle permission strings
     if (Array.isArray(payloadPermission)) {

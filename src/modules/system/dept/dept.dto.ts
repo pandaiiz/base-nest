@@ -10,6 +10,7 @@ import {
   MinLength,
   ValidateNested
 } from 'class-validator'
+import { PagerDto } from '~/common/dto/pager.dto'
 
 export class DeptDto {
   @ApiProperty({ description: '部门名称' })
@@ -50,7 +51,7 @@ export class MoveDeptDto {
   depts: MoveDept[]
 }
 
-export class DeptQueryDto {
+export class DeptQueryDto extends PagerDto {
   @ApiProperty({ description: '部门名称' })
   @IsString()
   @IsOptional()

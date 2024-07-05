@@ -28,7 +28,7 @@ export class DictItemController {
   @Get()
   @ApiOperation({ summary: '获取字典项列表' })
   @Perm(permissions.LIST)
-  async list(@Query() query: DictItemQueryDto): Promise<Pagination<DictItem>> {
+  async list(@Query() query: DictItemQueryDto): Promise<Pagination<DictItem> | DictItem[]> {
     const filterConfig = { contains: ['label', 'value'], equals: ['typeId'] }
     const filter = generateQueryFilter(filterConfig, query)
     return this.dictItemService.page(filter)

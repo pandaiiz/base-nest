@@ -62,7 +62,6 @@ function createRoute(menu: Menu): RouteRecordRaw {
 
 function filterAsyncRoutes(menus: Menu[], parentRoute: Menu): RouteRecordRaw[] {
   const res: RouteRecordRaw[] = []
-
   menus.forEach((menu) => {
     if (menu.type === 'ACCESS' || !menu.status) {
       // 如果是权限或禁用直接跳过
@@ -71,7 +70,7 @@ function filterAsyncRoutes(menus: Menu[], parentRoute: Menu): RouteRecordRaw[] {
     // 根级别菜单渲染
     let realRoute: RouteRecordRaw
 
-    const genFullPath = (path: string, parentPath) => {
+    const genFullPath = (path: string, parentPath: string) => {
       return uniqueSlash(path.startsWith('/') ? path : `/${parentPath}/${path}`)
     }
 
@@ -98,7 +97,6 @@ function filterAsyncRoutes(menus: Menu[], parentRoute: Menu): RouteRecordRaw[] {
         realRoute.children = childRoutes
       }
     }
-    // add curent route
     if (realRoute) res.push(realRoute)
   })
   return res
@@ -153,7 +151,6 @@ function filterMenuToTable(menus: Menu[], parentMenu: Menu) {
     } else if (parentMenu && parentMenu.id === menu.parentId && menu.type === 'ACCESS') {
       realMenu = { ...menu }
     }
-    // add curent route
     if (realMenu) {
       realMenu.pid = menu.id
       res.push(realMenu)

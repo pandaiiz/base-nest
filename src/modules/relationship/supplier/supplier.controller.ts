@@ -27,7 +27,7 @@ export class SupplierController {
   @Get()
   @ApiOperation({ summary: '获取供应商列表' })
   @Perm(permissions.LIST)
-  async list(@Query() query: SupplierQueryDto): Promise<Pagination<Supplier>> {
+  async list(@Query() query: SupplierQueryDto): Promise<Pagination<Supplier> | Supplier[]> {
     const filterConfig = { contains: ['name', 'code'] }
     const filter = generateQueryFilter(filterConfig, query)
     return this.supplierService.page(filter)

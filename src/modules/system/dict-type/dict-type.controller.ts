@@ -27,7 +27,7 @@ export class DictTypeController {
   @Get()
   @ApiOperation({ summary: '获取字典类型列表' })
   @Perm(permissions.LIST)
-  async list(@Query() query: DictTypeQueryDto): Promise<Pagination<DictType>> {
+  async list(@Query() query: DictTypeQueryDto): Promise<Pagination<DictType> | DictType[]> {
     const filterConfig = { contains: ['name', 'code'] }
     const filter = generateQueryFilter(filterConfig, query)
     return this.dictTypeService.page(filter)

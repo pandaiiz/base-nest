@@ -36,11 +36,16 @@ export const permissions = definePermission('system:menu', {
 export class MenuController {
   constructor(private menuService: MenuService) {}
 
+  @Get('list')
+  @ApiOperation({ summary: '获取所有菜单列表' })
+  async list(@Query() dto: MenuQueryDto) {
+    return this.menuService.list(dto)
+  }
+
   @Get()
   @ApiOperation({ summary: '获取所有菜单列表' })
-  // @ApiResult({ type: [MenuItemInfo] })
   @Perm(permissions.LIST)
-  async list(@Query() dto: MenuQueryDto) {
+  async page(@Query() dto: MenuQueryDto) {
     return this.menuService.list(dto)
   }
 

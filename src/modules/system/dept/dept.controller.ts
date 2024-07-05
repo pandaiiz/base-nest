@@ -5,12 +5,13 @@ import { IdParam } from '~/common/decorators/id-param.decorator'
 import { ApiSecurityAuth } from '~/common/decorators/swagger.decorator'
 import { BusinessException } from '~/common/exceptions/biz.exception'
 import { ErrorEnum } from '~/constants/error-code.constant'
-import { AuthUser } from '~/modules/auth/decorators/auth-user.decorator'
 import { Perm, definePermission } from '~/modules/auth/decorators/permission.decorator'
 
 import { DeptDto, DeptQueryDto } from './dept.dto'
 import { DeptService } from './dept.service'
 import { Dept } from '@prisma/client'
+import { Pagination } from '~/helper/pagination'
+import { generateQueryFilter } from '~/utils/generateQueryFilter.util'
 
 export const permissions = definePermission('system:dept', {
   LIST: 'list',
@@ -29,22 +30,24 @@ export class DeptController {
   @Get()
   @ApiOperation({ summary: '获取部门列表' })
   @Perm(permissions.LIST)
-  async list(@Query() dto: DeptQueryDto, @AuthUser('uid') uid: number): Promise<Dept[]> {
-    return this.deptService.getDeptList(uid, dto)
+  async list(@Query() query: DeptQueryDto): Promise<Pagination<Dept> | Dept[]> {
+    const filterConfig = { contains: ['name'] }
+    const filter = generateQueryFilter(filterConfig, query)
+    return this.deptService.page(filter)
   }
 
   @Post()
   @ApiOperation({ summary: '创建部门' })
   @Perm(permissions.CREATE)
-  async create(@Body() dto: DeptDto): Promise<void> {
+  async create(@Body() dto: Dept): Promise<void> {
     await this.deptService.create(dto)
   }
 
   @Get(':id')
   @ApiOperation({ summary: '查询部门信息' })
   @Perm(permissions.READ)
-  async info(@IdParam() id: number) {
-    return this.deptService.info(id)
+  async info(@IdParam() id: number): Promise<Dept> {
+    return this.deptService.findOne(id)
   }
 
   @Put(':id')

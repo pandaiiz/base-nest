@@ -56,7 +56,7 @@ export class MenuService {
     const result = await this.prisma.menu.create({
       data: menu
     })
-    this.sseService.noticeClientToUpdateMenusByMenuIds([result.id])
+    await this.sseService.noticeClientToUpdateMenusByMenuIds([result.id])
   }
 
   async update(id: number, data: any): Promise<void> {
@@ -64,7 +64,7 @@ export class MenuService {
       where: { id },
       data
     })
-    this.sseService.noticeClientToUpdateMenusByMenuIds([id])
+    await this.sseService.noticeClientToUpdateMenusByMenuIds([id])
   }
 
   /**
@@ -93,7 +93,6 @@ export class MenuService {
         }
       })
     }
-
     return generatorRouters(menus)
   }
 
@@ -189,7 +188,6 @@ export class MenuService {
       })
     } else {
       if (isEmpty(roleIds)) return permission
-
       result = await this.prisma.menu.findMany({
         where: {
           roles: {
@@ -209,7 +207,7 @@ export class MenuService {
       })
     }
     if (!isEmpty(result)) {
-      result.forEach((e) => {
+      result.forEach((e: { permission: string }) => {
         if (e.permission) permission = concat(permission, e.permission.split(','))
       })
       permission = uniq(permission)

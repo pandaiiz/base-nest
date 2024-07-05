@@ -22,8 +22,6 @@ export class RoleService {
       })
     }
 
-    console.log(where)
-
     const skip = (+current - 1) * +pageSize
     const take = +pageSize
     const [data, total] = await this.prisma.$transaction([
@@ -77,7 +75,7 @@ export class RoleService {
   /**
    * 更新角色信息
    */
-  async update(id, { menuIds, ...data }: RoleUpdateDto): Promise<void> {
+  async update(id: number, { menuIds, ...data }: RoleUpdateDto): Promise<void> {
     await this.prisma.role.update({
       where: { id },
       data: {

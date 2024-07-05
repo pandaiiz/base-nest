@@ -16,7 +16,7 @@ export class CrudService<T> {
     return this.model.findMany()
   }
 
-  async page(query: PagerDto): Promise<Pagination<T>> {
+  async page(query: PagerDto): Promise<Pagination<T> | T[]> {
     const { current, pageSize, where } = query
     if (+pageSize === -1) {
       return this.model.findMany()
