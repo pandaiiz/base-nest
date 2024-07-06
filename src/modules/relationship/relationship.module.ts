@@ -4,8 +4,9 @@ import { RouterModule } from '@nestjs/core'
 import { SupplierModule } from '~/modules/relationship/supplier/supplier.module'
 import { CustomerModule } from '~/modules/relationship/customer/customer.module'
 import { EmployeeModule } from '~/modules/relationship/employee/employee.module'
+import { MaterialModule } from '~/modules/relationship/material/material.module'
 
-const modules = [SupplierModule, CustomerModule, EmployeeModule]
+const modules = [SupplierModule, CustomerModule, EmployeeModule, MaterialModule]
 
 @Module({
   imports: [
