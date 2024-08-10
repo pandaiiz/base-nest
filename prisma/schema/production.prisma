@@ -1,0 +1,12 @@
+model ProductionPlan {
+    id        Int      @id @default(autoincrement())
+    createdAt DateTime @default(now()) @map("created_at")
+    updatedAt DateTime @updatedAt @map("updated_at")
+    // 数量
+    quantity  Int
+    status    Status
+    // 编码
+    code      String   @unique
+
+    @@map("sys_production_plan")
+}

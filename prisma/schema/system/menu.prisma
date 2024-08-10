@@ -1,0 +1,20 @@
+
+model Menu {
+  id         Int      @id @default(autoincrement())
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+  parentId   Int?     @map("parent_id")
+  name       String
+  path       String?
+  permission String?
+  type       MenuType
+  icon       String?
+  sort       Int?     @default(0)
+  component  String?
+  show       Int      @default(1)
+  status     Int      @default(1)
+  // 角色
+  roles      Role[]   @relation("sys_menu_role")
+
+  @@map("sys_menu")
+}

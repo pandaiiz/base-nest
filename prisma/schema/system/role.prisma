@@ -1,0 +1,21 @@
+model Role {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  // 角色名
+  name      String   @unique @database.VarChar(50)
+  // 角色标识
+  value     String   @unique
+  // 角色描述
+  remark    String?
+  // 状态：1启用，0禁用
+  status    Int?     @default(1)
+  // 是否默认用户
+  default   Boolean? @default(false)
+  // 菜单
+  menus     Menu[]   @relation("sys_menu_role")
+  // 用户
+  users     User[]   @relation("sys_user_role")
+
+  @@map("sys_role")
+}

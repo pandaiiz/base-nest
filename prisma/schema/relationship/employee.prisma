@@ -1,0 +1,13 @@
+model Employee {
+    id           Int       @id @default(autoincrement())
+    createdAt    DateTime  @default(now()) @map("created_at")
+    updatedAt    DateTime  @updatedAt @map("updated_at")
+    name         String
+    code         String
+    // 计件数量
+    piecesNumber Float?    @map("pieces_number")
+    // 离职日期
+    leftAt       DateTime? @map("left_at")
+
+    @@map("sys_employee")
+}

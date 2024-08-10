@@ -1,0 +1,31 @@
+model RefreshToken {
+    id            String      @id @default(uuid()) @database.Uuid
+    createdAt     DateTime    @default(now()) @map("created_at")
+    updatedAt     DateTime    @updatedAt @map("updated_at")
+    value         String      @unique @database.VarChar(500)
+    // 令牌过期时间
+    expiredAt     DateTime    @map("expired_at")
+    // 刷新令牌
+    accessToken   AccessToken @relation(fields: [accessTokenId], references: [id])
+    // 刷新令牌ID
+    accessTokenId String      @unique @map("access_token_id")
+
+    @@map("user_refresh_tokens")
+}
+
+model AccessToken {
+    id           String        @id @default(uuid()) @database.Uuid
+    createdAt    DateTime      @default(now()) @map("created_at")
+    updatedAt    DateTime      @updatedAt @map("updated_at")
+    value        String        @unique @database.VarChar(500)
+    // 令牌过期时间
+    expiredAt    DateTime      @map("expired_at")
+    // 用户
+    user         User          @relation(fields: [userId], references: [id])
+    // 用户ID
+    userId       Int           @map("user_id")
+    refreshToken RefreshToken?
+
+    @@index([userId])
+    @@map("user_access_tokens")
+}

@@ -1,0 +1,17 @@
+
+enum MenuType {
+  CATALOG
+  MENU
+  ACCESS
+}
+
+enum Status {
+  PLANING
+  IN_PRODUCTION
+  COMPLETED
+}
+
+enum UserRole {
+  MEMBER
+  ADMIN
+}

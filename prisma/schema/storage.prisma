@@ -1,0 +1,23 @@
+model Storage {
+    id        Int      @id @default(autoincrement())
+    createdAt DateTime @default(now()) @map("created_at")
+    updatedAt DateTime @updatedAt @map("updated_at")
+    // 文件名
+    name      String
+    // 真实文件名
+    fileName  String?
+    // 扩展名
+    extName   String?  @map("ext_name")
+    // 文件路径
+    path      String
+    // 文件类型
+    type      String?
+    // 文件大小
+    size      String?
+    // 用户ID
+    userId    Int?     @map("user_id")
+    user      User?    @relation(fields: [userId], references: [id])
+
+    @@index([userId])
+    @@map("tool_storage")
+}

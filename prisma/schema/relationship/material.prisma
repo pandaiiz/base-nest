@@ -1,0 +1,18 @@
+model Material {
+    id        Int        @id @default(autoincrement())
+    createdAt DateTime   @default(now()) @map("created_at")
+    updatedAt DateTime   @updatedAt @map("updated_at")
+    name      String
+    // 编码
+    code      String?    @unique
+    // 备注
+    remark    String?
+    // 单位
+    unit      String?
+    // 库存
+    stock     Float      @default(0)
+    // 供应商
+    suppliers Supplier[] @relation("sys_supplier_material")
+
+    @@map("sys_material")
+}

@@ -1,0 +1,26 @@
+model User {
+  id           Int           @id @default(autoincrement())
+  createdAt    DateTime      @default(now()) @map("created_at")
+  updatedAt    DateTime      @updatedAt @map("updated_at")
+  username     String        @unique
+  password     String
+  salt         String        @database.VarChar(32)
+  nickname     String?
+  avatar       String?
+  phone        String?
+  remark       String?
+  status       Int?          @default(1)
+  dept         Dept?         @relation(fields: [deptId], references: [id])
+  deptId       Int?          @map("dept_id")
+  // 角色
+  roles        Role[]        @relation("sys_user_role")
+  // Token
+  accessTokens AccessToken[]
+  // LoginLogs
+  loginLogs    LoginLog[]
+  // Storage
+  storages     Storage[]
+
+  @@index([deptId])
+  @@map("sys_user")
+}

@@ -1,0 +1,20 @@
+model LoginLog {
+    id        Int      @id @default(autoincrement())
+    createdAt DateTime @default(now()) @map("created_at")
+    updatedAt DateTime @updatedAt @map("updated_at")
+    // IP
+    ip        String?
+    // 地址
+    address   String?
+    // 登录方式
+    provider  String?
+    // 浏览器ua
+    ua        String?  @database.VarChar(500)
+    // 用户
+    user      User?    @relation(fields: [userId], references: [id])
+    // 用户ID
+    userId    Int?     @map("user_id")
+
+    @@index([userId])
+    @@map("sys_login_log")
+}
