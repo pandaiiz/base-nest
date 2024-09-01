@@ -24,7 +24,7 @@ const generateMenu = async () => {
           type: 'MENU',
           permission: item.permission,
           component: item.component,
-          show: item.show || 1
+          show: item.hide ? 0 : 1
         }))
       })
     }

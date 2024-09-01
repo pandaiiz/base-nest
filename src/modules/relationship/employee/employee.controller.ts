@@ -33,6 +33,13 @@ export class EmployeeController {
     return this.employeeService.page(filter)
   }
 
+  @Get('all')
+  @ApiOperation({ summary: '获取员工列表' })
+  @Perm(permissions.LIST)
+  async allList(): Promise<Employee[]> {
+    return this.employeeService.findAll()
+  }
+
   @Post()
   @ApiOperation({ summary: '新增员工' })
   @Perm(permissions.CREATE)

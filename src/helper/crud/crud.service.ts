@@ -17,14 +17,14 @@ export class CrudService<T> {
   }
 
   async page(query: PagerDto): Promise<Pagination<T> | T[]> {
-    const { current, pageSize, where } = query
+    const { current, pageSize, where, orderBy } = query
     if (+pageSize === -1) {
       return this.model.findMany()
     }
     const skip = (+current - 1) * +pageSize
     const take = +pageSize
     const [data, total] = await this.prisma.$transaction([
-      this.model.findMany({ skip, take, where }),
+      this.model.findMany({ skip, take, where, orderBy }),
       this.model.count()
     ])
     return new Pagination<T>(data, total, current, pageSize)

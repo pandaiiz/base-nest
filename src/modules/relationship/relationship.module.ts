@@ -5,8 +5,9 @@ import { SupplierModule } from '~/modules/relationship/supplier/supplier.module'
 import { CustomerModule } from '~/modules/relationship/customer/customer.module'
 import { EmployeeModule } from '~/modules/relationship/employee/employee.module'
 import { MaterialModule } from '~/modules/relationship/material/material.module'
+import { ToolModule } from '~/modules/relationship/tool/tool.module'
 
-const modules = [SupplierModule, CustomerModule, EmployeeModule, MaterialModule]
+const modules = [SupplierModule, CustomerModule, EmployeeModule, MaterialModule, ToolModule]
 
 @Module({
   imports: [

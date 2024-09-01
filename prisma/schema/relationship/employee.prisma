@@ -9,5 +9,7 @@ model Employee {
     // 离职日期
     leftAt       DateTime? @map("left_at")
 
+    Tool Tool[] @relation("sys_tool_employee")
+
     @@map("sys_employee")
 }

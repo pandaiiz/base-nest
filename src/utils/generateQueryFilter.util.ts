@@ -1,5 +1,6 @@
 export function generateQueryFilter(filterConfig: any, query: any) {
   const where = {}
+  const orderBy = {}
   filterConfig.contains?.forEach((key: string | number) => {
     if (query[key]) {
       where[key] = {
@@ -12,5 +13,8 @@ export function generateQueryFilter(filterConfig: any, query: any) {
       where[key] = query[key]
     }
   })
-  return { current: query.current, pageSize: query.pageSize, where }
+  if (filterConfig.orderBy) {
+    orderBy[filterConfig.orderBy] = filterConfig.orderType
+  }
+  return { current: query.current, pageSize: query.pageSize, where, orderBy }
 }

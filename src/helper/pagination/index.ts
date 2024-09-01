@@ -6,8 +6,9 @@ export class Pagination<T> {
   }
   success?: boolean
   total?: number
+  summary?: any
 
-  constructor(data: T[], total: number, current: number, pageSize: number) {
+  constructor(data: T[], total: number, current: number, pageSize: number, summary?: any) {
     this.data = data
     this.pagination = {
       current,
@@ -15,5 +16,6 @@ export class Pagination<T> {
     }
     this.total = total
     this.success = true
+    this.summary = summary
   }
 }

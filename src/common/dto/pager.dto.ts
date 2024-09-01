@@ -30,4 +30,6 @@ export class PagerDto {
   pageSize?: number
 
   where?: any
+
+  orderBy?: any
 }

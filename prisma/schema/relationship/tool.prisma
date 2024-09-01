@@ -1,0 +1,29 @@
+model Tool {
+    id            Int       @id @default(autoincrement())
+    createdAt     DateTime  @default(now()) @map("created_at")
+    updatedAt     DateTime  @updatedAt @map("updated_at")
+    //刀具名称
+    name          String
+    //刀具编码(字典)
+    code          String
+    // 供应商
+    supplierId    Int
+    supplier      Supplier  @relation("sys_supplier_tool", fields: [supplierId], references: [id])
+    // 操作人员
+    creatorId     Int?
+    creator       User?     @relation("sys_tool_created_user", fields: [creatorId], references: [id])
+    // 操作类型 1刀具入库 2刀具出库  11刀具借出 12刀具借出 21刀具修磨发出 22刀具修磨收回
+    operationType Int
+    // 领取人员
+    receiverId    Int?
+    receiver      Employee? @relation("sys_tool_employee", fields: [receiverId], references: [id])
+    // 备注
+    remark        String?
+    // 数量
+    quantity      Int       @default(0)
+
+    @@index([supplierId])
+    @@index([creatorId])
+    @@index([receiverId])
+    @@map("sys_tool")
+}

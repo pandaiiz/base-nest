@@ -1,5 +1,4 @@
 import cluster from 'node:cluster'
-import path from 'node:path'
 
 import { HttpStatus, Logger, UnprocessableEntityException, ValidationPipe } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
@@ -36,8 +35,6 @@ async function bootstrap() {
 
   app.enableCors({ origin: '*', credentials: true })
   app.setGlobalPrefix(globalPrefix)
-  app.useStaticAssets({ root: path.join(__dirname, '..', 'public') })
-  // Starts listening for shutdown hooks
   !isDev && app.enableShutdownHooks()
 
   if (isDev) app.useGlobalInterceptors(new LoggingInterceptor())

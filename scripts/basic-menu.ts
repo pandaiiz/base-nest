@@ -31,14 +31,14 @@ export const basicMenu: any = [
         name: '字典管理',
         path: '/system/dict/type',
         component: 'system/dict-type/index',
-        permission: 'system:dict-type:list',
-        show: 0
+        permission: 'system:dict-type:list'
       },
       {
         name: '字典项管理',
         path: '/system/dict/type/:id',
         component: 'system/dict-item/index',
-        permission: 'system:dict-item:list'
+        permission: 'system:dict-item:list',
+        hide: true
       },
       {
         name: '部门管理',
@@ -64,6 +64,12 @@ export const basicMenu: any = [
         path: '/relationship/material',
         component: 'relationship/material/index',
         permission: 'relationship:material:list'
+      },
+      {
+        name: '刀具管理',
+        path: '/relationship/tool',
+        component: 'relationship/tool/index',
+        permission: 'relationship:tool:list'
       },
       {
         name: '员工管理',
@@ -111,11 +117,43 @@ export const basicMenu: any = [
       }
     ]
   },
+  // 收发管理
+  {
+    name: '收发管理',
+    path: '/io',
+    sort: 5,
+    children: [
+      {
+        name: '收发单列表',
+        path: '/io/order',
+        component: 'io/order/index',
+        permission: 'io:order:list'
+      },
+      {
+        name: '收发记录',
+        path: '/io/records',
+        component: 'io/records/index',
+        permission: 'io:records:list'
+      },
+      {
+        name: '废品列表',
+        path: '/io/rubbish',
+        component: 'io/rubbish/index',
+        permission: 'io:rubbish:list'
+      },
+      {
+        name: '收发统计',
+        path: '/io/statistic',
+        component: 'io/statistic/index',
+        permission: 'io:statistic:list'
+      }
+    ]
+  },
   // 系统工具
   {
     name: '系统工具',
     path: '/tool',
-    sort: 5,
+    sort: 6,
     children: [
       {
         name: '存储管理',

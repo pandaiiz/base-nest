@@ -15,3 +15,8 @@ enum UserRole {
   MEMBER
   ADMIN
 }
+
+enum ioType {
+  IN
+  OUT
+}

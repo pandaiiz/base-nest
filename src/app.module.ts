@@ -19,9 +19,16 @@ import { SystemModule } from './modules/system/system.module'
 import { TasksModule } from './modules/tasks/tasks.module'
 import { ToolsModule } from './modules/tools/tools.module'
 import { RelationshipModule } from '~/modules/relationship/relationship.module'
+import { IoModule } from './modules/io/io.module'
+import { join } from 'node:path'
+import { ServeStaticModule } from '@nestjs/serve-static'
 
 @Module({
   imports: [
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, '..', 'public')
+      // exclude: ['/api/(.*)']
+    }),
     PrismaModule.forRoot({ isGlobal: true }),
     ConfigModule.forRoot({
       isGlobal: true,
@@ -45,7 +52,8 @@ import { RelationshipModule } from '~/modules/relationship/relationship.module'
     ToolsModule,
     HealthModule,
     SseModule,
-    NetdiskModule
+    NetdiskModule,
+    IoModule
     // biz
     // end biz
   ],

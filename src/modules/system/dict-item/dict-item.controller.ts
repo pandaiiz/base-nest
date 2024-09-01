@@ -29,9 +29,21 @@ export class DictItemController {
   @ApiOperation({ summary: '获取字典项列表' })
   @Perm(permissions.LIST)
   async list(@Query() query: DictItemQueryDto): Promise<Pagination<DictItem> | DictItem[]> {
-    const filterConfig = { contains: ['label', 'value'], equals: ['typeId'] }
+    const filterConfig = {
+      contains: ['label', 'value'],
+      equals: ['typeId'],
+      orderBy: 'sort',
+      orderType: 'asc'
+    }
     const filter = generateQueryFilter(filterConfig, query)
     return this.dictItemService.page(filter)
+  }
+
+  @Get('by-dict-code')
+  @ApiOperation({ summary: '获取字典项列表' })
+  @Perm(permissions.LIST)
+  async getDictItemsByDictCode(@Query() query: { dictCode: string }): Promise<DictItem[]> {
+    return this.dictItemService.getDictItemsByDictCode(query.dictCode)
   }
 
   @Post()

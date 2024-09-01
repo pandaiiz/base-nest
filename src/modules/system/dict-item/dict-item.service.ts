@@ -16,4 +16,12 @@ export class DictItemService extends CrudService<DictItem> {
     const result = await this.prisma.dictItem.findFirst({ where: { value, type: { id: typeId } } })
     if (result) throw new BusinessException(ErrorEnum.DICT_NAME_EXISTS)
   }
+
+  async getDictItemsByDictCode(dictCode: string): Promise<DictItem[]> {
+    const dict = await this.prisma.dictType.findUnique({
+      where: { code: dictCode },
+      include: { items: true }
+    })
+    return dict?.items
+  }
 }

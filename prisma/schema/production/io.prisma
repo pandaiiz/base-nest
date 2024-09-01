@@ -1,0 +1,46 @@
+model ioOrder {
+  id          Int      @id @default(autoincrement())
+  orderNumber String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  creator     User     @relation("io_order_created_by", fields: [createdBy], references: [id])
+  createdBy   Int
+  updatedBy   Int?
+  modifier    User?    @relation("io_order_updated_by", fields: [updatedBy], references: [id])
+
+  quantity     Int // 件数
+  singleWeight Float // 单重
+  totalWeight  Float // 总重
+  steps        ioStep[]
+  status       Int      @default(1) // 状态 1生产中 2已完成 3挂起
+  remark       String?
+
+  @@index([createdBy])
+  @@index([updatedBy])
+}
+
+model ioStep {
+  id        Int        @id @default(autoincrement())
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  step      Int // 当前步骤
+  orderId   Int // 外键，关联到 ioOrder
+  order     ioOrder    @relation(fields: [orderId], references: [id])
+  records   ioRecord[] // 与 Record 模型的一对多关系
+
+  @@index([orderId])
+}
+
+model ioRecord {
+  id          Int      @id @default(autoincrement())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  ioType      ioType // 入库/出库
+  productType String // 良品/不良品/退回/暂存/粉
+  weight      Float
+  quantity    Int // 件数
+  stepId      Int
+  step        ioStep   @relation(fields: [stepId], references: [id])
+
+  @@index([stepId])
+}
