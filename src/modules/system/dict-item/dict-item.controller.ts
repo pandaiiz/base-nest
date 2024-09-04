@@ -54,6 +54,14 @@ export class DictItemController {
     await this.dictItemService.create(dto)
   }
 
+  @Post('create-by-dict-code')
+  @ApiOperation({ summary: '使用字典编码新增字典项' })
+  @Perm(permissions.CREATE)
+  async createByDictCode(@Body() dto: any): Promise<void> {
+    await this.dictItemService.isExistKey(dto)
+    await this.dictItemService.createByDictCode(dto)
+  }
+
   @Get(':id')
   @ApiOperation({ summary: '查询字典项信息' })
   @Perm(permissions.READ)

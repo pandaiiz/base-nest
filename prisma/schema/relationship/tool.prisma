@@ -7,8 +7,8 @@ model Tool {
     //刀具编码(字典)
     code          String
     // 供应商
-    supplierId    Int
-    supplier      Supplier  @relation("sys_supplier_tool", fields: [supplierId], references: [id])
+    supplierId    Int?
+    supplier      Supplier? @relation("sys_supplier_tool", fields: [supplierId], references: [id])
     // 操作人员
     creatorId     Int?
     creator       User?     @relation("sys_tool_created_user", fields: [creatorId], references: [id])

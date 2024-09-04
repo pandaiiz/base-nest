@@ -40,4 +40,12 @@ export class ToolQueryDto extends PagerDto {
   @IsOptional()
   @IsInt()
   receiverId?: number
+
+  @ApiProperty({ description: '创建时间' })
+  @IsOptional()
+  startTime?: Date
+
+  @ApiProperty({ description: '创建时间' })
+  @IsOptional()
+  endTime?: Date
 }

@@ -12,8 +12,8 @@ export class DictItemService extends CrudService<DictItem> {
   }
 
   async isExistKey(dto: DictItem): Promise<void | never> {
-    const { value, typeId } = dto
-    const result = await this.prisma.dictItem.findFirst({ where: { value, type: { id: typeId } } })
+    const { value } = dto
+    const result = await this.prisma.dictItem.findFirst({ where: { value } })
     if (result) throw new BusinessException(ErrorEnum.DICT_NAME_EXISTS)
   }
 
@@ -23,5 +23,19 @@ export class DictItemService extends CrudService<DictItem> {
       include: { items: true }
     })
     return dict?.items
+  }
+
+  async createByDictCode(dto: any): Promise<DictItem> {
+    const { dictCode } = dto
+    const dict = await this.prisma.dictType.findUnique({
+      where: { code: dictCode }
+    })
+    delete dto.dictCode
+    return this.prisma.dictItem.create({
+      data: {
+        typeId: dict.id,
+        ...dto
+      }
+    })
   }
 }

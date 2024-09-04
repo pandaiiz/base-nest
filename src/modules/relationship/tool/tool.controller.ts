@@ -59,4 +59,11 @@ export class ToolController {
   async delete(@IdParam() id: number): Promise<void> {
     await this.toolService.delete(id)
   }
+
+  @Get('report')
+  @ApiOperation({ summary: '查询刀具记录' })
+  @Perm(permissions.READ)
+  async getReport(): Promise<any> {
+    return this.toolService.getReport()
+  }
 }
