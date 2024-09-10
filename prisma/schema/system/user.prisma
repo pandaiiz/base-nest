@@ -21,9 +21,9 @@ model User {
   // Storage
   storages     Storage[]
 
-  ioOrderCreated ioOrder[] @relation("io_order_created_by")
-  ioOrderUpdated ioOrder[] @relation("io_order_updated_by")
-  Tool           Tool[]    @relation("sys_tool_created_user")
+  ioOrderCreated ioOrder[]   @relation("io_order_created_by")
+  ioOrderUpdated ioOrder[]   @relation("io_order_updated_by")
+  knifeTool      KnifeTool[] @relation("knife_tool_created_user")
 
   @@index([deptId])
   @@map("sys_user")

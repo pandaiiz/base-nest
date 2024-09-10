@@ -1,0 +1,29 @@
+model KnifeTool {
+    id            Int       @id @default(autoincrement())
+    createdAt     DateTime  @default(now()) @map("created_at")
+    updatedAt     DateTime  @updatedAt @map("updated_at")
+    //刀具名称
+    name          String
+    //刀具编码(字典)
+    code          String
+    // 供应商
+    supplierId    Int?
+    supplier      Supplier? @relation("knife_tool_supplier_", fields: [supplierId], references: [id])
+    // 操作人员
+    creatorId     Int?
+    creator       User?     @relation("knife_tool_created_user", fields: [creatorId], references: [id])
+    // 操作类型 1刀具入库 2刀具出库  11刀具收回 12刀具借出 21刀具修磨收回 22刀具修磨发出 31刀具报废 
+    operationType Int
+    // 领取部门
+    deptId        Int?
+    dept          Dept?     @relation("knife_tool_dept", fields: [deptId], references: [id])
+    // 备注
+    remark        String?
+    // 数量
+    quantity      Int       @default(0)
+
+    @@index([supplierId])
+    @@index([creatorId])
+    @@index([deptId])
+    @@map("io_knife_tool")
+}

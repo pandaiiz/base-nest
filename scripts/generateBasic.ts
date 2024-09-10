@@ -1,6 +1,7 @@
 import { PrismaClient } from '@prisma/client'
 import { basicMenu } from './basic-menu'
 import { MD5 } from 'crypto-js'
+import { genKnifeTools } from './generateKnifeTools'
 
 const prisma = new PrismaClient()
 
@@ -65,5 +66,29 @@ const generateUser = async () => {
     }
   })
 }
-
-Promise.all([generateMenu(), generateUser()]).then(() => console.log('done'))
+const generateSupplier = async () => {
+  await prisma.supplier.createMany({
+    data: [
+      { name: '誉和', code: 'GYS_YH' },
+      { name: '超钻', code: 'GYS_CZ' },
+      { name: '赛锐锋', code: 'GYS_SRF' }
+    ]
+  })
+}
+const generateDepartment = async () => {
+  await prisma.dept.createMany({
+    data: [
+      { name: 'CNC A组', sort: 1 },
+      { name: 'CNC B组', sort: 2 },
+      { name: 'CNC C组', sort: 3 },
+      { name: 'CNC D组', sort: 4 }
+    ]
+  })
+}
+Promise.all([
+  generateMenu(),
+  generateUser(),
+  genKnifeTools(),
+  generateSupplier(),
+  generateDepartment()
+]).then(() => console.log('done'))

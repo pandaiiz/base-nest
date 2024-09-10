@@ -3,11 +3,11 @@ model DictType {
     createdAt DateTime   @default(now()) @map("created_at")
     updatedAt DateTime   @updatedAt @map("updated_at")
     // 字典名称
-    name      String     @unique
+    label     String     @unique
     // 字典编码
     code      String     @unique
     // 状态
-    status    Int?       @default(0)
+    status    Int?       @default(1)
     // 备注
     remark    String?
     sort      Int?       @default(0)
@@ -26,7 +26,7 @@ model DictItem {
     // 字典项值
     value     String
     // 状态
-    status    Int?     @default(0)
+    status    Int?     @default(1)
     // 备注
     remark    String?
     sort      Int?     @default(0)

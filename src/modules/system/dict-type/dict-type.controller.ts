@@ -44,7 +44,7 @@ export class DictTypeController {
   @ApiOperation({ summary: '新增字典类型' })
   @Perm(permissions.CREATE)
   async create(@Body() dto: DictType): Promise<void> {
-    await this.dictTypeService.isExistKey(dto.name)
+    await this.dictTypeService.isExistKey(dto.label)
     await this.dictTypeService.create(dto)
   }
 

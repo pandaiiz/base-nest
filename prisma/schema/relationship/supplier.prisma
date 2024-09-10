@@ -1,14 +1,14 @@
 model Supplier {
-    id        Int        @id @default(autoincrement())
-    createdAt DateTime   @default(now()) @map("created_at")
-    updatedAt DateTime   @updatedAt @map("updated_at")
-    name      String
+    id         Int         @id @default(autoincrement())
+    createdAt  DateTime    @default(now()) @map("created_at")
+    updatedAt  DateTime    @updatedAt @map("updated_at")
+    name       String
     // 编码
-    code      String     @unique
+    code       String      @unique
     // 原料
-    materials Material[] @relation("sys_supplier_material")
+    materials  Material[]  @relation("sys_supplier_material")
     // 刀具
-    tools     Tool[]     @relation("sys_supplier_tool")
+    knifeTools KnifeTool[] @relation("knife_tool_supplier_")
 
     @@map("sys_supplier")
 }

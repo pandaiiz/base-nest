@@ -1,1 +1,0 @@
-import{f as e}from"./dateUtil-BnlWTJph.js";import"./index-C-g3yOAE.js";const i=[{title:"ID",dataIndex:"id",width:60,hideInSearch:!0},{title:"供应商名称",dataIndex:"name"},{title:"供应商编码",dataIndex:"code"},{title:"更新时间",dataIndex:"updatedAt",sorter:!0,width:160,render:(d,t)=>e(t.createdAt),hideInSearch:!0}];export{i as baseColumns};

@@ -11,8 +11,8 @@ export class DictTypeService extends CrudService<DictType> {
     super(prisma, prisma.dictType)
   }
 
-  async isExistKey(name: string): Promise<void | never> {
-    const result = await this.prisma.dictType.findUnique({ where: { name } })
+  async isExistKey(label: string): Promise<void | never> {
+    const result = await this.prisma.dictType.findUnique({ where: { label } })
     if (result) throw new BusinessException(ErrorEnum.DICT_NAME_EXISTS)
   }
 }

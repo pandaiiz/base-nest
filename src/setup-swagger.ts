@@ -32,14 +32,12 @@ export function setupSwagger(
     ignoreGlobalPrefix: false,
     extraModels: [ResOp, TreeResult]
   })
-
   SwaggerModule.setup(path, app, document, {
     swaggerOptions: {
       persistAuthorization: true // 保持登录
     }
   })
 
-  // started log
   const logger = new Logger('SwaggerModule')
   logger.log(`Document running on http://127.0.0.1:${port}/${path}`)
 }

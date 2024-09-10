@@ -37,16 +37,3 @@ export {};
     else console.log('成功生成 env.d.ts 文件')
   }
 )
-
-//   console.log('envObj:', envObj)
-
-function formatValue(value) {
-  let _value
-  try {
-    const res = JSON.parse(value)
-    _value = typeof res === 'object' ? value : res
-  } catch (error) {
-    _value = `'${value}'`
-  }
-  return _value
-}

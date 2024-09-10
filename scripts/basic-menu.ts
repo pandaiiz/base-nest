@@ -60,18 +60,6 @@ export const basicMenu: any = [
         permission: 'relationship:supplier:list'
       },
       {
-        name: '原料管理',
-        path: '/relationship/material',
-        component: 'relationship/material/index',
-        permission: 'relationship:material:list'
-      },
-      {
-        name: '刀具管理',
-        path: '/relationship/tool',
-        component: 'relationship/tool/index',
-        permission: 'relationship:tool:list'
-      },
-      {
         name: '员工管理',
         path: '/relationship/employee',
         component: 'relationship/employee/index',
@@ -142,6 +130,18 @@ export const basicMenu: any = [
         permission: 'io:rubbish:list'
       },
       {
+        name: '原料管理',
+        path: '/io/material',
+        component: 'io/material/index',
+        permission: 'io:material:list'
+      },
+      {
+        name: '刀具管理',
+        path: '/io/knife-tool',
+        component: 'io/knife-tool/index',
+        permission: 'io:knife-tool:list'
+      },
+      {
         name: '收发统计',
         path: '/io/statistic',
         component: 'io/statistic/index',
@@ -149,11 +149,25 @@ export const basicMenu: any = [
       }
     ]
   },
+  // 报表
+  {
+    name: '报表',
+    path: '/report',
+    sort: 6,
+    children: [
+      {
+        name: '刀具报表',
+        path: '/report/knife-tool',
+        component: 'report/knife-tool/index',
+        permission: 'io:knife-tool:report'
+      }
+    ]
+  },
   // 系统工具
   {
     name: '系统工具',
     path: '/tool',
-    sort: 6,
+    sort: 7,
     children: [
       {
         name: '存储管理',
