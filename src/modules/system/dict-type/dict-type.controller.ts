@@ -11,7 +11,7 @@ import { DictType } from '@prisma/client'
 import { generateQueryFilter } from '~/utils/generateQueryFilter.util'
 
 export const permissions = definePermission('system:dict-type', {
-  LIST: 'list',
+  QUERY: 'query',
   CREATE: 'create',
   READ: 'read',
   UPDATE: 'update',
@@ -26,7 +26,7 @@ export class DictTypeController {
 
   @Get()
   @ApiOperation({ summary: '获取字典类型列表' })
-  @Perm(permissions.LIST)
+  @Perm(permissions.QUERY)
   async list(@Query() query: DictTypeQueryDto): Promise<Pagination<DictType> | DictType[]> {
     const filterConfig = { contains: ['name', 'code'] }
     const filter = generateQueryFilter(filterConfig, query)
@@ -35,7 +35,7 @@ export class DictTypeController {
 
   @Get('select-options')
   @ApiOperation({ summary: '一次性获取所有的字典类型(不分页)' })
-  @Perm(permissions.LIST)
+  @Perm(permissions.QUERY)
   async getAll(): Promise<DictType[]> {
     return this.dictTypeService.findAll()
   }

@@ -14,7 +14,7 @@ import { StorageInfo } from './storage.modal'
 import { StorageService } from './storage.service'
 
 export const permissions = definePermission('tool:storage', {
-  LIST: 'list',
+  QUERY: 'query',
   DELETE: 'delete'
 } as const)
 
@@ -27,7 +27,7 @@ export class StorageController {
   @Get('list')
   @ApiOperation({ summary: '获取本地存储列表' })
   @ApiResult({ type: [StorageInfo], isPage: true })
-  @Perm(permissions.LIST)
+  @Perm(permissions.QUERY)
   async list(@Query() dto: StoragePageDto): Promise<Pagination<StorageInfo>> {
     return this.storageService.list(dto)
   }

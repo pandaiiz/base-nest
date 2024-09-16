@@ -1,1 +1,0 @@
-import{a as e}from"./dateUtil-C5Px1K3M.js";import"./index-CaOge65T.js";const i=[{title:"ID",dataIndex:"id",width:60,hideInSearch:!0},{title:"客户名称",dataIndex:"name"},{title:"客户编码",dataIndex:"code"},{title:"更新时间",dataIndex:"updatedAt",sorter:!0,width:160,render:(a,t)=>e(t.createdAt),hideInSearch:!0}];export{i as baseColumns};

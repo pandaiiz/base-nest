@@ -11,7 +11,7 @@ import { Supplier } from '@prisma/client'
 import { generateQueryFilter } from '~/utils/generateQueryFilter.util'
 
 export const permissions = definePermission('relationship:supplier', {
-  LIST: 'list',
+  QUERY: 'query',
   CREATE: 'create',
   READ: 'read',
   UPDATE: 'update',
@@ -26,7 +26,7 @@ export class SupplierController {
 
   @Get()
   @ApiOperation({ summary: '获取供应商列表' })
-  @Perm(permissions.LIST)
+  // @Perm(permissions.QUERY)
   async list(@Query() query: SupplierQueryDto): Promise<Pagination<Supplier> | Supplier[]> {
     const filterConfig = { contains: ['name', 'code'] }
     const filter = generateQueryFilter(filterConfig, query)

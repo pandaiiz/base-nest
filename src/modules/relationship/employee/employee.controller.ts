@@ -11,7 +11,7 @@ import { Employee } from '@prisma/client'
 import { generateQueryFilter } from '~/utils/generateQueryFilter.util'
 
 export const permissions = definePermission('relationship:employee', {
-  LIST: 'list',
+  QUERY: 'query',
   CREATE: 'create',
   READ: 'read',
   UPDATE: 'update',
@@ -26,7 +26,7 @@ export class EmployeeController {
 
   @Get()
   @ApiOperation({ summary: '获取员工列表' })
-  @Perm(permissions.LIST)
+  @Perm(permissions.QUERY)
   async list(@Query() query: EmployeeQueryDto): Promise<Pagination<Employee> | Employee[]> {
     const filterConfig = { contains: ['name', 'code'] }
     const filter = generateQueryFilter(filterConfig, query)
@@ -35,7 +35,7 @@ export class EmployeeController {
 
   @Get('all')
   @ApiOperation({ summary: '获取员工列表' })
-  @Perm(permissions.LIST)
+  @Perm(permissions.QUERY)
   async allList(): Promise<Employee[]> {
     return this.employeeService.findAll()
   }

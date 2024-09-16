@@ -14,7 +14,7 @@ import { KickDto } from './online.dto'
 import { OnlineUserInfo } from './online.model'
 import { OnlineService } from './online.service'
 
-export const permissions = definePermission('system:online', ['list', 'kick'] as const)
+export const permissions = definePermission('system:online', ['query', 'kick'] as const)
 
 @ApiTags('System - 在线用户模块')
 @ApiSecurityAuth()
@@ -26,7 +26,7 @@ export class OnlineController {
   @Get('list')
   @ApiOperation({ summary: '查询当前在线用户' })
   @ApiResult({ type: [OnlineUserInfo] })
-  @Perm(permissions.LIST)
+  @Perm(permissions.QUERY)
   async list(@Req() req: FastifyRequest): Promise<OnlineUserInfo[]> {
     return this.onlineService.listOnlineUser(req.accessToken)
   }

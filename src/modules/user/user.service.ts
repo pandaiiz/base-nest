@@ -69,10 +69,6 @@ export class UserService {
 
     const data = {
       ...(info.nickname ? { nickname: info.nickname } : null),
-      ...(info.avatar ? { avatar: info.avatar } : null),
-      ...(info.email ? { email: info.email } : null),
-      ...(info.phone ? { phone: info.phone } : null),
-      ...(info.qq ? { qq: info.qq } : null),
       ...(info.remark ? { remark: info.remark } : null)
     }
     await this.prisma.user.update({ where: { id: uid }, data })
@@ -145,7 +141,7 @@ export class UserService {
     { password, deptId, roleIds, status, ...data }: UserUpdateDto
   ): Promise<void> {
     if (password) await this.forceUpdatePassword(id, password)
-    this.prisma.user.update({
+    await this.prisma.user.update({
       where: { id },
       data: {
         ...data,

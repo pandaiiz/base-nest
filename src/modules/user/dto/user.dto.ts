@@ -4,26 +4,18 @@ import {
   ArrayMaxSize,
   ArrayMinSize,
   ArrayNotEmpty,
-  IsEmail,
   IsIn,
   IsInt,
   IsOptional,
   IsString,
   Matches,
   MaxLength,
-  MinLength,
-  ValidateIf
+  MinLength
 } from 'class-validator'
-import { isEmpty } from 'lodash'
 
 import { PagerDto } from '~/common/dto/pager.dto'
 
 export class UserDto {
-  @ApiProperty({ description: '头像' })
-  @IsOptional()
-  @IsString()
-  avatar?: string
-
   @ApiProperty({ description: '登录账号', example: 'admin' })
   @IsString()
   @Matches(/^[a-z0-9A-Z\W_]+$/)
@@ -41,7 +33,7 @@ export class UserDto {
   @ArrayMaxSize(3)
   roleIds: number[]
 
-  @ApiProperty({ description: '归属大区', type: Number })
+  @ApiProperty({ description: '归属部门', type: Number })
   @Type(() => Number)
   @IsInt()
   @IsOptional()
@@ -51,24 +43,6 @@ export class UserDto {
   @IsOptional()
   @IsString()
   nickname: string
-
-  @ApiProperty({ description: '邮箱', example: 'bqy.dev@qq.com' })
-  @IsEmail()
-  @ValidateIf((o) => !isEmpty(o.email))
-  email: string
-
-  @ApiProperty({ description: '手机号' })
-  @IsOptional()
-  @IsString()
-  phone?: string
-
-  @ApiProperty({ description: 'QQ' })
-  @IsOptional()
-  @IsString()
-  @Matches(/^[1-9][0-9]{4,10}$/)
-  @MinLength(5)
-  @MaxLength(11)
-  qq?: string
 
   @ApiProperty({ description: '备注' })
   @IsOptional()

@@ -1,1 +1,0 @@
-import{d as p,_ as m,j as P,f as l,g as o}from"./index-CaOge65T.js";var F=["fieldProps","min","proFieldProps","max"],f=function(r,i){var e=r.fieldProps,s=r.min,t=r.proFieldProps,a=r.max,d=m(r,F);return P.jsx(l,o({valueType:"digit",fieldProps:o({min:s,max:a},e),ref:i,filedConfig:{defaultProps:{width:"100%"}},proFieldProps:t},d))},n=p.forwardRef(f);const u=n;export{u as P};

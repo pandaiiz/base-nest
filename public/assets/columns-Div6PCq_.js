@@ -1,0 +1,1 @@
+import{a as e}from"./dateUtil-D6r_EuKQ.js";import"./index-BdVTcDul.js";const i=[{title:"ID",dataIndex:"id",width:60,hideInSearch:!0},{title:"员工名称",dataIndex:"name"},{title:"员工编码",dataIndex:"code"},{title:"更新时间",dataIndex:"updatedAt",sorter:!0,width:160,render:(a,t)=>e(t.createdAt),hideInSearch:!0}];export{i as baseColumns};

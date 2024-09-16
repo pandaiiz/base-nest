@@ -3,6 +3,7 @@ import { Type } from 'class-transformer'
 import {
   ArrayNotEmpty,
   IsArray,
+  IsBoolean,
   IsInt,
   IsOptional,
   IsString,
@@ -23,6 +24,11 @@ export class DeptDto {
   @Min(0)
   @IsOptional()
   sort: number
+
+  @ApiProperty({ description: '使用刀具', required: false })
+  @IsBoolean()
+  @IsOptional()
+  useKnifeTool: boolean
 }
 
 export class TransferDeptDto {
@@ -56,4 +62,9 @@ export class DeptQueryDto extends PagerDto {
   @IsString()
   @IsOptional()
   name?: string
+
+  @ApiProperty({ description: '使用刀具' })
+  @IsBoolean()
+  @IsOptional()
+  useKnifeTool?: boolean
 }

@@ -5,14 +5,8 @@ import { FastifyRequest } from 'fastify'
 import { ApiSecurityAuth } from '~/common/decorators/swagger.decorator'
 import { AuthUser } from '~/modules/auth/decorators/auth-user.decorator'
 
-import { Perm, definePermission } from '~/modules/auth/decorators/permission.decorator'
-
 import { FileUploadDto } from './upload.dto'
 import { UploadService } from './upload.service'
-
-export const permissions = definePermission('upload', {
-  UPLOAD: 'upload'
-} as const)
 
 @ApiSecurityAuth()
 @ApiTags('Tools - 上传模块')
@@ -21,7 +15,6 @@ export class UploadController {
   constructor(private uploadService: UploadService) {}
 
   @Post()
-  @Perm(permissions.UPLOAD)
   @ApiOperation({ summary: '上传' })
   @ApiConsumes('multipart/form-data')
   @ApiBody({

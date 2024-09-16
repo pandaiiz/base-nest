@@ -23,7 +23,7 @@ import { MenuDto, MenuQueryDto, MenuUpdateDto } from './menu.dto'
 import { MenuService } from './menu.service'
 
 export const permissions = definePermission('system:menu', {
-  LIST: 'list',
+  QUERY: 'query',
   CREATE: 'create',
   READ: 'read',
   UPDATE: 'update',
@@ -44,7 +44,7 @@ export class MenuController {
 
   @Get()
   @ApiOperation({ summary: '获取所有菜单列表' })
-  @Perm(permissions.LIST)
+  @Perm(permissions.QUERY)
   async page(@Query() dto: MenuQueryDto) {
     return this.menuService.list(dto)
   }

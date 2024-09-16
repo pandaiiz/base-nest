@@ -19,7 +19,7 @@ export class CrudService<T> {
   async page(query: PagerDto): Promise<Pagination<T> | T[]> {
     const { current, pageSize, where, orderBy } = query
     if (+pageSize === -1) {
-      return this.model.findMany()
+      return this.model.findMany({ where, orderBy })
     }
     const skip = (+current - 1) * +pageSize
     const take = +pageSize

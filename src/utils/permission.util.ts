@@ -15,7 +15,6 @@ export interface RouteRecordRaw {
   hideInMenu?: boolean
   meta: {
     title: string
-    icon: string
     type: string
     sort: number
     show: number
@@ -27,7 +26,6 @@ export interface RouteRecordRaw {
 function createRoute(menu: Menu): RouteRecordRaw {
   const commonMeta: RouteRecordRaw['meta'] = {
     title: menu.name,
-    icon: menu.icon,
     type: menu.type,
     sort: menu.sort,
     show: menu.show,
@@ -119,7 +117,6 @@ function filterMenuToTable(menus: Menu[], parentMenu: Menu) {
       path?: string
       permission?: string
       type?: string
-      icon?: string
       component?: string
       show?: number
       status?: number

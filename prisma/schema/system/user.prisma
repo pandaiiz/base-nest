@@ -6,8 +6,6 @@ model User {
   password     String
   salt         String        @database.VarChar(32)
   nickname     String?
-  avatar       String?
-  phone        String?
   remark       String?
   status       Int?          @default(1)
   dept         Dept?         @relation(fields: [deptId], references: [id])

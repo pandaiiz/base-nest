@@ -48,9 +48,6 @@ export class RbacGuard implements CanActivate {
       (await this.authService.getPermissions(user.uid))
     let canNext = false
 
-    console.log(allPermissions)
-    console.log(payloadPermission)
-
     // handle permission strings
     if (Array.isArray(payloadPermission)) {
       // 只要有一个权限满足即可

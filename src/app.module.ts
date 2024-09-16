@@ -25,15 +25,14 @@ import { ServeStaticModule } from '@nestjs/serve-static'
 @Module({
   imports: [
     ServeStaticModule.forRoot({
-      rootPath: join(__dirname, '..', 'public')
-      // exclude: ['/api/(.*)']
+      rootPath: join(__dirname, '..', 'public'),
+      serveRoot: '/static'
     }),
     PrismaModule.forRoot({ isGlobal: true }),
     ConfigModule.forRoot({
       isGlobal: true,
       expandVariables: true,
-      // 指定多个 env 文件时，第一个优先级最高
-      envFilePath: ['.env.local', `.env.${process.env.NODE_ENV}`, '.env'],
+      envFilePath: ['.env'],
       load: [...Object.values(config)]
     }),
     SharedModule,

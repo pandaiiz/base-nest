@@ -23,12 +23,11 @@ export class KnifeToolService extends CrudService<KnifeTool> {
       where: { supplierId, code, deptId }
     })
 
-    // if (tableType === '全部') tableTypeSchema = undefined
     const tableTypeMap = {
       部门: [11, 12],
       厂商: [1, 2],
       修磨: [21, 22],
-      报废: [31]
+      报废: [31, 32]
     }
     const tableTypeSchema = tableTypeMap[tableType] || undefined
 
@@ -75,7 +74,7 @@ export class KnifeToolService extends CrudService<KnifeTool> {
     return new Pagination<KnifeTool>(data, total, current, pageSize, summary)
   }
 
-  async getReport({ startTime, endTime }: { startTime?: string; endTime?: string }) {
+  async getReport1({ startTime, endTime }: { startTime?: string; endTime?: string }) {
     // 获取所有操作类型的数据
     const allOperationData = await this.prisma.knifeTool.groupBy({
       by: ['code', 'name', 'operationType', 'deptId', 'supplierId'],
@@ -195,5 +194,241 @@ export class KnifeToolService extends CrudService<KnifeTool> {
       })
     )
     return finalData
+  }
+
+  async getReport({ startTime, endTime }: { startTime?: string; endTime?: string }) {
+    console.log(startTime, endTime)
+    return ''
+  }
+
+  async getDeptReport() {
+    const deptReport = await this.prisma.knifeTool.groupBy({
+      by: ['deptId', 'operationType', 'code', 'name'],
+      where: {
+        operationType: {
+          in: [11, 12, 31]
+        }
+      },
+      _sum: {
+        quantity: true
+      }
+    })
+
+    const depts = await this.prisma.dept.findMany({
+      where: {
+        useKnifeTool: true
+      },
+      select: {
+        id: true,
+        name: true
+      }
+    })
+
+    const deptMap = new Map(depts.map((dept) => [dept.id, dept.name]))
+
+    const groupedReport = deptReport.reduce((acc, item) => {
+      const deptId = item.deptId || 0
+      const code = item.code
+      const name = item.name
+
+      if (!acc[deptId]) {
+        acc[deptId] = {
+          deptId,
+          deptName: deptMap.get(deptId) || '未知部门',
+          tools: {}
+        }
+      }
+
+      if (!acc[deptId].tools[`${code}-${name}`]) {
+        acc[deptId].tools[`${code}-${name}`] = {
+          code,
+          name,
+          inQuantity: 0,
+          outQuantity: 0,
+          scrapQuantity: 0,
+          remainingQuantity: 0
+        }
+      }
+
+      const tool = acc[deptId].tools[`${code}-${name}`]
+
+      switch (item.operationType) {
+        case 11: // 刀具收回
+          tool.inQuantity += item._sum.quantity || 0
+          break
+        case 12: // 刀具借出
+          tool.outQuantity += item._sum.quantity || 0
+          break
+        case 31: // 员工刀具报废
+          tool.scrapQuantity += item._sum.quantity || 0
+          break
+      }
+
+      tool.remainingQuantity = tool.outQuantity - tool.inQuantity - tool.scrapQuantity
+
+      return acc
+    }, {})
+
+    const finalReport = Object.values(groupedReport).map((dept: any) => ({
+      ...dept,
+      tools: Object.values(dept.tools as Record<string, any>)
+    }))
+
+    return finalReport
+  }
+
+  async getSupplierReport() {
+    const supplierReport = await this.prisma.knifeTool.groupBy({
+      by: ['supplierId', 'operationType', 'code', 'name'],
+      where: {
+        operationType: {
+          in: [1, 2]
+        }
+      },
+      _sum: {
+        quantity: true
+      }
+    })
+    const supplierIds = [
+      ...new Set(supplierReport.map((item) => item.supplierId).filter((id) => id !== null))
+    ]
+    const suppliers = await this.prisma.supplier.findMany({
+      where: {
+        id: {
+          in: supplierIds
+        }
+      },
+      select: {
+        id: true,
+        name: true
+      }
+    })
+
+    const supplierMap = new Map(suppliers.map((supplier) => [supplier.id, supplier.name]))
+
+    const groupedReport = supplierReport.reduce((acc, item) => {
+      const supplierId = item.supplierId || 0
+      const code = item.code
+      const name = item.name
+
+      if (!acc[supplierId]) {
+        acc[supplierId] = {
+          supplierId,
+          supplierName: supplierMap.get(supplierId) || '未知供应商',
+          tools: {}
+        }
+      }
+
+      if (!acc[supplierId].tools[`${code}-${name}`]) {
+        acc[supplierId].tools[`${code}-${name}`] = {
+          code,
+          name,
+          inQuantity: 0,
+          outQuantity: 0,
+          remainingQuantity: 0
+        }
+      }
+
+      const tool = acc[supplierId].tools[`${code}-${name}`]
+
+      switch (item.operationType) {
+        case 1: // 刀具入库
+          tool.inQuantity += item._sum.quantity || 0
+          break
+        case 2: // 刀具出库
+          tool.outQuantity += item._sum.quantity || 0
+          break
+      }
+
+      tool.remainingQuantity = tool.inQuantity - tool.outQuantity
+
+      return acc
+    }, {})
+
+    const finalReport = Object.values(groupedReport).map((supplier: any) => ({
+      ...supplier,
+      tools: Object.values(supplier.tools as Record<string, any>)
+    }))
+
+    return finalReport
+  }
+
+  async getPolishReport() {
+    const supplierReport = await this.prisma.knifeTool.groupBy({
+      by: ['supplierId', 'operationType', 'code', 'name'],
+      where: {
+        operationType: {
+          in: [21, 22, 32]
+        }
+      },
+      _sum: {
+        quantity: true
+      }
+    })
+    const supplierIds = [
+      ...new Set(supplierReport.map((item) => item.supplierId).filter((id) => id !== null))
+    ]
+    const suppliers = await this.prisma.supplier.findMany({
+      where: {
+        id: {
+          in: supplierIds
+        }
+      },
+      select: {
+        id: true,
+        name: true
+      }
+    })
+
+    const supplierMap = new Map(suppliers.map((supplier) => [supplier.id, supplier.name]))
+
+    const groupedReport = supplierReport.reduce((acc, item) => {
+      const supplierId = item.supplierId || 0
+      const code = item.code
+      const name = item.name
+
+      if (!acc[supplierId]) {
+        acc[supplierId] = {
+          supplierId,
+          supplierName: supplierMap.get(supplierId) || '未知供应商',
+          tools: {}
+        }
+      }
+
+      if (!acc[supplierId].tools[`${code}-${name}`]) {
+        acc[supplierId].tools[`${code}-${name}`] = {
+          code,
+          name,
+          inQuantity: 0,
+          outQuantity: 0,
+          scrapQuantity: 0,
+          remainingQuantity: 0
+        }
+      }
+
+      const tool = acc[supplierId].tools[`${code}-${name}`]
+
+      switch (item.operationType) {
+        case 21: // 修磨收回
+          tool.inQuantity += item._sum.quantity || 0
+          break
+        case 22: // 修磨发出
+          tool.outQuantity += item._sum.quantity || 0
+          break
+        case 32: // 修磨报废
+          tool.scrapQuantity += item._sum.quantity || 0
+          break
+      }
+
+      tool.remainingQuantity = tool.outQuantity - tool.inQuantity - tool.scrapQuantity
+      return acc
+    }, {})
+
+    const finalReport = Object.values(groupedReport).map((supplier: any) => ({
+      ...supplier,
+      tools: Object.values(supplier.tools as Record<string, any>)
+    }))
+
+    return finalReport
   }
 }

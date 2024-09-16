@@ -1,13 +1,15 @@
 model Dept {
-  id        Int         @id @default(autoincrement())
-  createdAt DateTime    @default(now()) @map("created_at")
-  updatedAt DateTime    @updatedAt @map("updated_at")
+  id           Int         @id @default(autoincrement())
+  createdAt    DateTime    @default(now()) @map("created_at")
+  updatedAt    DateTime    @updatedAt @map("updated_at")
   // 部门名称
-  name      String
-  sort      Int?        @default(0)
+  name         String
+  // 是否使用刀具
+  useKnifeTool Boolean     @default(false) @map("use_knife_tool")
+  sort         Int?        @default(0)
   // 用户列表
-  users     User[]
-  knifeTool KnifeTool[] @relation("knife_tool_dept")
+  users        User[]
+  knifeTool    KnifeTool[] @relation("knife_tool_dept")
 
   @@map("sys_dept")
 }

@@ -11,7 +11,7 @@ import { Material } from '@prisma/client'
 import { generateQueryFilter } from '~/utils/generateQueryFilter.util'
 
 export const permissions = definePermission('relationship:material', {
-  LIST: 'list',
+  QUERY: 'query',
   CREATE: 'create',
   READ: 'read',
   UPDATE: 'update',
@@ -26,7 +26,7 @@ export class MaterialController {
 
   @Get()
   @ApiOperation({ summary: '获取客户列表' })
-  @Perm(permissions.LIST)
+  @Perm(permissions.QUERY)
   async list(@Query() query: MaterialQueryDto): Promise<Pagination<Material> | Material[]> {
     const filterConfig = { contains: ['name', 'code'] }
     const filter = generateQueryFilter(filterConfig, query)

@@ -22,7 +22,7 @@ import { UserDto, UserQueryDto, UserUpdateDto } from './dto/user.dto'
 import { UserService } from './user.service'
 
 export const permissions = definePermission('system:user', {
-  LIST: 'list',
+  QUERY: 'query',
   CREATE: 'create',
   READ: 'read',
   UPDATE: 'update',
@@ -43,7 +43,7 @@ export class UserController {
   @Get()
   @ApiOperation({ summary: '获取用户列表' })
   // @ApiResult({ type: [User], isPage: true })
-  @Perm(permissions.LIST)
+  @Perm(permissions.QUERY)
   async list(@Query() dto: UserQueryDto) {
     return this.userService.list(dto)
   }

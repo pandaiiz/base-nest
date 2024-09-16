@@ -11,7 +11,7 @@ import { IoOrderDto, IoOrderQueryDto } from './order.dto'
 import { AuthUser } from '~/modules/auth/decorators/auth-user.decorator'
 
 export const permissions = definePermission('io:order', {
-  LIST: 'list',
+  QUERY: 'query',
   CREATE: 'create',
   READ: 'read',
   UPDATE: 'update',
@@ -26,7 +26,7 @@ export class IoOrderController {
 
   @Get()
   @ApiOperation({ summary: '获取收发单列表' })
-  @Perm(permissions.LIST)
+  @Perm(permissions.QUERY)
   async list(@Query() query: IoOrderQueryDto): Promise<Pagination<ioOrder> | ioOrder[]> {
     const filterConfig = { contains: ['orderNumber'] }
     const filter = generateQueryFilter(filterConfig, query)

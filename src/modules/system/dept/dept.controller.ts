@@ -14,7 +14,7 @@ import { Pagination } from '~/helper/pagination'
 import { generateQueryFilter } from '~/utils/generateQueryFilter.util'
 
 export const permissions = definePermission('system:dept', {
-  LIST: 'list',
+  QUERY: 'query',
   CREATE: 'create',
   READ: 'read',
   UPDATE: 'update',
@@ -29,9 +29,9 @@ export class DeptController {
 
   @Get()
   @ApiOperation({ summary: '获取部门列表' })
-  @Perm(permissions.LIST)
+  // @Perm(permissions.QUERY)
   async list(@Query() query: DeptQueryDto): Promise<Pagination<Dept> | Dept[]> {
-    const filterConfig = { contains: ['name'] }
+    const filterConfig = { contains: ['name'], equals: ['useKnifeTool'] }
     const filter = generateQueryFilter(filterConfig, query)
     return this.deptService.page(filter)
   }

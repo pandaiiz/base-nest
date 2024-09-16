@@ -9,15 +9,35 @@ export class KnifeToolDto {
   @MinLength(1)
   name: string
 
-  @ApiProperty({ description: '状态' })
+  @ApiProperty({ description: '刀具编码' })
+  @IsString()
+  @MinLength(1)
+  code: string
+
+  @ApiProperty({ description: '操作类型' })
   @IsOptional()
   @IsInt()
-  status?: number
+  operationType?: number
 
   @ApiProperty({ description: '备注' })
   @IsOptional()
   @IsString()
   remark?: string
+
+  @ApiProperty({ description: '件数' })
+  @IsOptional()
+  @IsInt()
+  quantity?: number
+
+  @ApiProperty({ description: '供应商' })
+  @IsOptional()
+  @IsInt()
+  supplierId?: number
+
+  @ApiProperty({ description: '部门' })
+  @IsOptional()
+  @IsInt()
+  deptId?: number
 }
 
 export class KnifeToolQueryDto extends PagerDto {

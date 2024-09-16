@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Post, Put, Query } from '@nestjs/common'
+import { Body, Controller, Delete, Get, Param, Post, Put, Query } from '@nestjs/common'
 import { ApiOperation, ApiTags } from '@nestjs/swagger'
 import { IdParam } from '~/common/decorators/id-param.decorator'
 import { ApiSecurityAuth } from '~/common/decorators/swagger.decorator'
@@ -11,7 +11,7 @@ import { KnifeTool } from '@prisma/client'
 import { AuthUser } from '~/modules/auth/decorators/auth-user.decorator'
 
 export const permissions = definePermission('io:knife-tool', {
-  LIST: 'list',
+  QUERY: 'query',
   CREATE: 'create',
   READ: 'read',
   UPDATE: 'update',
@@ -27,7 +27,7 @@ export class KnifeToolController {
 
   @Get()
   @ApiOperation({ summary: '获取刀具记录列表' })
-  @Perm(permissions.LIST)
+  @Perm(permissions.QUERY)
   async list(@Query() query: KnifeToolQueryDto): Promise<Pagination<KnifeTool> | KnifeTool[]> {
     return this.knifeToolService.page(query)
   }
@@ -51,6 +51,7 @@ export class KnifeToolController {
   @ApiOperation({ summary: '更新刀具记录' })
   @Perm(permissions.UPDATE)
   async update(@IdParam() id: number, @Body() dto: KnifeToolDto): Promise<void> {
+    console.log(id, dto)
     await this.knifeToolService.update(id, dto)
   }
 
@@ -61,10 +62,16 @@ export class KnifeToolController {
     await this.knifeToolService.delete(id)
   }
 
-  @Get('report')
+  @Get('report/:type')
   @ApiOperation({ summary: '刀具报表' })
   @Perm(permissions.REPORT)
-  async getReport(@Query() query: { startTime?: string; endTime?: string }): Promise<any> {
-    return this.knifeToolService.getReport({ startTime: query.startTime, endTime: query.endTime })
+  async getReport(
+    @Query() query: { startTime?: string; endTime?: string },
+    @Param('type') type: string
+  ): Promise<any> {
+    if (type === 'dept') return this.knifeToolService.getDeptReport()
+    if (type === 'supplier') return this.knifeToolService.getSupplierReport()
+    if (type === 'polish') return this.knifeToolService.getPolishReport()
+    // return this.knifeToolService.getReport({ startTime: query.startTime, endTime: query.endTime })
   }
 }

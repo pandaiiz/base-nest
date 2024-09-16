@@ -1,4 +1,14 @@
-import { BeforeApplicationShutdown, Controller, Headers, Ip, Param, ParseIntPipe, Req, Res, Sse } from '@nestjs/common'
+import {
+  BeforeApplicationShutdown,
+  Controller,
+  Headers,
+  Ip,
+  Param,
+  ParseIntPipe,
+  Req,
+  Res,
+  Sse
+} from '@nestjs/common'
 import { ApiOperation, ApiTags } from '@nestjs/swagger'
 import { FastifyReply, FastifyRequest } from 'fastify'
 import { Observable, interval } from 'rxjs'
@@ -15,12 +25,15 @@ import { MessageEvent, SseService } from './sse.service'
 export class SseController implements BeforeApplicationShutdown {
   private replyMap: Map<number, FastifyReply> = new Map()
 
-  constructor(private readonly sseService: SseService, private onlineService: OnlineService) { }
+  constructor(
+    private readonly sseService: SseService,
+    private onlineService: OnlineService
+  ) {}
 
   private closeAllConnect() {
     this.sseService.sendToAllUser({
       type: 'close',
-      data: 'bye~',
+      data: 'bye~'
     })
     this.replyMap.forEach((reply) => {
       reply.raw.end().destroy()
@@ -29,7 +42,6 @@ export class SseController implements BeforeApplicationShutdown {
 
   // 通过控制台关闭程序时触发
   beforeApplicationShutdown() {
-    // console.log('beforeApplicationShutdown')
     this.closeAllConnect()
   }
 
@@ -40,7 +52,7 @@ export class SseController implements BeforeApplicationShutdown {
     @Req() req: FastifyRequest,
     @Res() res: FastifyReply,
     @Ip() ip: string,
-    @Headers('user-agent') ua: string,
+    @Headers('user-agent') ua: string
   ): Promise<Observable<MessageEvent>> {
     this.replyMap.set(uid, res)
     this.onlineService.addOnlineUser(req.accessToken, ip, ua)

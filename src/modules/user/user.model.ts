@@ -12,7 +12,4 @@ export class AccountInfo {
 
   @ApiProperty({ description: '备注' })
   remark: string
-
-  @ApiProperty({ description: '头像' })
-  avatar: string
 }

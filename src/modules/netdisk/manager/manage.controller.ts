@@ -1,9 +1,5 @@
 import { Body, Controller, Get, Post, Query } from '@nestjs/common'
-import {
-  ApiOkResponse,
-  ApiOperation,
-  ApiTags,
-} from '@nestjs/swagger'
+import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger'
 
 import { BusinessException } from '~/common/exceptions/biz.exception'
 import { ErrorEnum } from '~/constants/error-code.constant'
@@ -21,12 +17,12 @@ import {
   GetFileListDto,
   MKDirDto,
   MarkFileDto,
-  RenameDto,
+  RenameDto
 } from './manage.dto'
 import { NetDiskManageService } from './manage.service'
 
 export const permissions = definePermission('netdisk:manage', {
-  LIST: 'list',
+  QUERY: 'query',
   CREATE: 'create',
   INFO: 'info',
   UPDATE: 'update',
@@ -37,7 +33,7 @@ export const permissions = definePermission('netdisk:manage', {
   DOWNLOAD: 'download',
   RENAME: 'rename',
   CUT: 'cut',
-  COPY: 'copy',
+  COPY: 'copy'
 } as const)
 
 @ApiTags('NetDiskManage - 网盘管理模块')
@@ -48,7 +44,7 @@ export class NetDiskManageController {
   @Get('list')
   @ApiOperation({ summary: '获取文件列表' })
   @ApiOkResponse({ type: SFileList })
-  @Perm(permissions.LIST)
+  @Perm(permissions.QUERY)
   async list(@Query() dto: GetFileListDto): Promise<SFileList> {
     return await this.manageService.getFileList(dto.path, dto.marker, dto.key)
   }
@@ -57,11 +53,8 @@ export class NetDiskManageController {
   @ApiOperation({ summary: '创建文件夹，支持多级' })
   @Perm(permissions.MKDIR)
   async mkdir(@Body() dto: MKDirDto): Promise<void> {
-    const result = await this.manageService.checkFileExist(
-      `${dto.path}${dto.dirName}/`,
-    )
-    if (result)
-      throw new BusinessException(ErrorEnum.OSS_FILE_OR_DIR_EXIST)
+    const result = await this.manageService.checkFileExist(`${dto.path}${dto.dirName}/`)
+    if (result) throw new BusinessException(ErrorEnum.OSS_FILE_OR_DIR_EXIST)
 
     await this.manageService.createDir(`${dto.path}${dto.dirName}`)
   }
@@ -74,7 +67,7 @@ export class NetDiskManageController {
     checkIsDemoMode()
 
     return {
-      token: this.manageService.createUploadToken(`${user.uid}`),
+      token: this.manageService.createUploadToken(`${user.uid}`)
     }
   }
 
@@ -91,7 +84,7 @@ export class NetDiskManageController {
   @Perm(permissions.MARK)
   async mark(@Body() dto: MarkFileDto): Promise<void> {
     await this.manageService.changeFileHeaders(dto.name, dto.path, {
-      mark: dto.mark,
+      mark: dto.mark
     })
   }
 
@@ -108,15 +101,12 @@ export class NetDiskManageController {
   @Perm(permissions.RENAME)
   async rename(@Body() dto: RenameDto): Promise<void> {
     const result = await this.manageService.checkFileExist(
-      `${dto.path}${dto.toName}${dto.type === 'dir' ? '/' : ''}`,
+      `${dto.path}${dto.toName}${dto.type === 'dir' ? '/' : ''}`
     )
-    if (result)
-      throw new BusinessException(ErrorEnum.OSS_FILE_OR_DIR_EXIST)
+    if (result) throw new BusinessException(ErrorEnum.OSS_FILE_OR_DIR_EXIST)
 
-    if (dto.type === 'file')
-      await this.manageService.renameFile(dto.path, dto.name, dto.toName)
-    else
-      await this.manageService.renameDir(dto.path, dto.name, dto.toName)
+    if (dto.type === 'file') await this.manageService.renameFile(dto.path, dto.name, dto.toName)
+    else await this.manageService.renameDir(dto.path, dto.name, dto.toName)
   }
 
   @Post('delete')
@@ -133,21 +123,13 @@ export class NetDiskManageController {
     if (dto.originPath === dto.toPath)
       throw new BusinessException(ErrorEnum.OSS_NO_OPERATION_REQUIRED)
 
-    await this.manageService.moveMultiFileOrDir(
-      dto.files,
-      dto.originPath,
-      dto.toPath,
-    )
+    await this.manageService.moveMultiFileOrDir(dto.files, dto.originPath, dto.toPath)
   }
 
   @Post('copy')
   @ApiOperation({ summary: '复制文件或文件夹，支持批量' })
   @Perm(permissions.COPY)
   async copy(@Body() dto: FileOpDto): Promise<void> {
-    await this.manageService.copyMultiFileOrDir(
-      dto.files,
-      dto.originPath,
-      dto.toPath,
-    )
+    await this.manageService.copyMultiFileOrDir(dto.files, dto.originPath, dto.toPath)
   }
 }

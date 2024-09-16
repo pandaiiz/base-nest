@@ -4,7 +4,12 @@ import { MD5 } from 'crypto-js'
 import { genKnifeTools } from './generateKnifeTools'
 
 const prisma = new PrismaClient()
-
+const ACCESS_LIST = [
+  { type: 'create', name: '新增' },
+  { type: 'delete', name: '删除' },
+  { type: 'update', name: '修改' },
+  { type: 'query', name: '查询' }
+]
 const generateMenu = async () => {
   for (const menu of basicMenu) {
     const parent = await prisma.menu.create({
@@ -17,17 +22,28 @@ const generateMenu = async () => {
     })
 
     if (menu.children) {
-      await prisma.menu.createMany({
-        data: menu.children.map((item: any) => ({
-          name: item.name,
-          path: item.path,
-          parentId: parent.id,
-          type: 'MENU',
-          permission: item.permission,
-          component: item.component,
-          show: item.hide ? 0 : 1
-        }))
-      })
+      for (const menuChild of menu.children) {
+        const createdMenu = await prisma.menu.create({
+          data: {
+            name: menuChild.name,
+            path: menuChild.path,
+            parentId: parent.id,
+            type: 'MENU',
+            permission: menuChild.permission,
+            component: menuChild.component,
+            show: menuChild.hide ? 0 : 1
+          }
+        })
+        await prisma.menu.createMany({
+          data: ACCESS_LIST.map((item: any) => ({
+            name: item.name,
+            parentId: createdMenu.id,
+            type: 'ACCESS',
+            permission: menuChild.permission + ':' + item.type,
+            show: item.hide ? 0 : 1
+          }))
+        })
+      }
     }
   }
 }
@@ -49,7 +65,13 @@ const generateUser = async () => {
       remark: '超级管理员'
     }
   })
-
+  const ioRole = await prisma.role.create({
+    data: {
+      name: '收发',
+      value: 'io',
+      remark: '收发'
+    }
+  })
   const salt = randomValue(32)
   const password = MD5(`${'a123456'}${salt}`).toString()
   await prisma.user.create({
@@ -61,6 +83,19 @@ const generateUser = async () => {
       roles: {
         connect: {
           id: adminRole.id
+        }
+      }
+    }
+  })
+  await prisma.user.create({
+    data: {
+      username: 'shoufa',
+      password,
+      nickname: '收发',
+      salt,
+      roles: {
+        connect: {
+          id: ioRole.id
         }
       }
     }
@@ -81,7 +116,8 @@ const generateDepartment = async () => {
       { name: 'CNC A组', sort: 1 },
       { name: 'CNC B组', sort: 2 },
       { name: 'CNC C组', sort: 3 },
-      { name: 'CNC D组', sort: 4 }
+      { name: 'CNC D组', sort: 4 },
+      { name: '收发', sort: 5 }
     ]
   })
 }

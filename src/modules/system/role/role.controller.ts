@@ -21,7 +21,7 @@ import { RoleService } from './role.service'
 import { generateQueryFilter } from '~/utils/generateQueryFilter.util'
 
 export const permissions = definePermission('system:role', {
-  LIST: 'list',
+  QUERY: 'query',
   CREATE: 'create',
   READ: 'read',
   UPDATE: 'update',
@@ -39,7 +39,7 @@ export class RoleController {
 
   @Get()
   @ApiOperation({ summary: '获取角色列表' })
-  @Perm(permissions.LIST)
+  @Perm(permissions.QUERY)
   async list(@Query() query: RoleQueryDto) {
     const filterConfig = { contains: ['name', 'value'], equals: ['status'] }
     const filter = generateQueryFilter(filterConfig, query)

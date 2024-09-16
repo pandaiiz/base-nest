@@ -1,1 +1,0 @@
-import{d as a,_ as p,j as d,f as i,g as P}from"./index-CaOge65T.js";var l=["fieldProps","proFieldProps"],x=function(r,e){var o=r.fieldProps,s=r.proFieldProps,t=p(r,l);return d.jsx(i,P({ref:e,valueType:"textarea",fieldProps:o,proFieldProps:s},t))};const m=a.forwardRef(x);export{m as P};

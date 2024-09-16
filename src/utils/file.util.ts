@@ -6,37 +6,31 @@ import { MultipartFile } from '@fastify/multipart'
 import dayjs from 'dayjs'
 
 enum Type {
-  IMAGE = '图片',
-  TXT = '文档',
-  MUSIC = '音乐',
-  VIDEO = '视频',
-  OTHER = '其他',
+  IMAGE = 'images',
+  TXT = 'documents',
+  MUSIC = 'musics',
+  VIDEO = 'videos',
+  OTHER = 'others'
 }
 
 export function getFileType(extName: string) {
   const documents = 'txt doc pdf ppt pps xlsx xls docx'
   const music = 'mp3 wav wma mpa ram ra aac aif m4a'
   const video = 'avi mpg mpe mpeg asf wmv mov qt rm mp4 flv m4v webm ogv ogg'
-  const image
-    = 'bmp dib pcp dif wmf gif jpg tif eps psd cdr iff tga pcd mpt png jpeg'
-  if (image.includes(extName))
-    return Type.IMAGE
+  const image = 'bmp dib pcp dif wmf gif jpg tif eps psd cdr iff tga pcd mpt png jpeg'
+  if (image.includes(extName)) return Type.IMAGE
 
-  if (documents.includes(extName))
-    return Type.TXT
+  if (documents.includes(extName)) return Type.TXT
 
-  if (music.includes(extName))
-    return Type.MUSIC
+  if (music.includes(extName)) return Type.MUSIC
 
-  if (video.includes(extName))
-    return Type.VIDEO
+  if (video.includes(extName)) return Type.VIDEO
 
   return Type.OTHER
 }
 
 export function getName(fileName: string) {
-  if (fileName.includes('.'))
-    return fileName.split('.')[0]
+  if (fileName.includes('.')) return fileName.split('.')[0]
 
   return fileName
 }
@@ -46,8 +40,7 @@ export function getExtname(fileName: string) {
 }
 
 export function getSize(bytes: number, decimals = 2) {
-  if (bytes === 0)
-    return '0 Bytes'
+  if (bytes === 0) return '0 Bytes'
 
   const k = 1024
   const dm = decimals < 0 ? 0 : decimals
@@ -69,13 +62,17 @@ export function getFilePath(name: string, currentDate: string, type: string) {
   return `/upload/${currentDate}/${type}/${name}`
 }
 
-export async function saveLocalFile(buffer: Buffer, name: string, currentDate: string, type: string) {
+export async function saveLocalFile(
+  buffer: Buffer,
+  name: string,
+  currentDate: string,
+  type: string
+) {
   const filePath = path.join(__dirname, '../../', 'public/upload/', `${currentDate}/`, `${type}/`)
   try {
     // 判断是否有该文件夹
     await fs.promises.stat(filePath)
-  }
-  catch (error) {
+  } catch (error) {
     // 没有该文件夹就创建
     await fs.promises.mkdir(filePath, { recursive: true })
   }

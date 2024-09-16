@@ -12,7 +12,7 @@ import { Pagination } from '~/helper/pagination'
 import { generateQueryFilter } from '~/utils/generateQueryFilter.util'
 
 export const permissions = definePermission('system:dict-item', {
-  LIST: 'list',
+  QUERY: 'query',
   CREATE: 'create',
   READ: 'read',
   UPDATE: 'update',
@@ -27,7 +27,7 @@ export class DictItemController {
 
   @Get()
   @ApiOperation({ summary: '获取字典项列表' })
-  @Perm(permissions.LIST)
+  @Perm(permissions.QUERY)
   async list(@Query() query: DictItemQueryDto): Promise<Pagination<DictItem> | DictItem[]> {
     const filterConfig = {
       contains: ['label', 'value'],
@@ -41,7 +41,6 @@ export class DictItemController {
 
   @Get('by-dict-code')
   @ApiOperation({ summary: '获取字典项列表' })
-  @Perm(permissions.LIST)
   async getDictItemsByDictCode(@Query() query: { dictCode: string }): Promise<DictItem[]> {
     return this.dictItemService.getDictItemsByDictCode(query.dictCode)
   }

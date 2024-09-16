@@ -34,12 +34,6 @@ export class MenuDto {
   @IsIn([0, 1])
   status: number
 
-  @ApiProperty({ description: '菜单图标' })
-  @IsOptional()
-  @ValidateIf((o: MenuDto) => o.type !== 'ACCESS')
-  @IsString()
-  icon?: string
-
   @ApiProperty({ description: '对应权限' })
   @ValidateIf((o: MenuDto) => o.type === 'ACCESS')
   @IsString()
