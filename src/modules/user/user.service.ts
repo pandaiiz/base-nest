@@ -1,16 +1,8 @@
-import { InjectRedis } from '@liaoliaots/nestjs-redis'
 import { BadRequestException, Injectable } from '@nestjs/common'
-import Redis from 'ioredis'
 import { isEmpty, isNil } from 'lodash'
 import { BusinessException } from '~/common/exceptions/biz.exception'
 import { ErrorEnum } from '~/constants/error-code.constant'
 import { ROOT_ROLE_ID } from '~/constants/system.constant'
-import {
-  genAuthPermKey,
-  genAuthPVKey,
-  genAuthTokenKey,
-  genOnlineUserKey
-} from '~/helper/genRedisKey'
 
 import { AccountUpdateDto } from '~/modules/auth/dto/account.dto'
 import { RegisterDto } from '~/modules/auth/dto/auth.dto'
@@ -25,11 +17,7 @@ import { User } from '@prisma/client'
 
 @Injectable()
 export class UserService {
-  constructor(
-    @InjectRedis()
-    private readonly redis: Redis,
-    private prisma: PrismaService
-  ) {}
+  constructor(private prisma: PrismaService) {}
 
   async findUserById(id: number): Promise<User | undefined> {
     return this.prisma.user.findUnique({
@@ -86,7 +74,6 @@ export class UserService {
     if (user.password !== comparePassword) throw new BusinessException(ErrorEnum.PASSWORD_MISMATCH)
     const password = md5(`${dto.newPassword}${user.salt}`)
     await this.prisma.user.update({ where: { id: uid }, data: { password } })
-    await this.upgradePasswordV(user.id)
   }
 
   /**
@@ -104,7 +91,6 @@ export class UserService {
       where: { id: uid },
       data: { password: newPassword }
     })
-    await this.upgradePasswordV(user.id)
   }
 
   /**
@@ -256,43 +242,11 @@ export class UserService {
    * 禁用用户
    */
   async forbidden(uid: number, accessToken?: string): Promise<void> {
-    await this.redis.del(genAuthPVKey(uid))
-    await this.redis.del(genAuthTokenKey(uid))
-    await this.redis.del(genAuthPermKey(uid))
     if (accessToken) {
-      const token = await this.prisma.accessToken.findUnique({
+      await this.prisma.accessToken.findUnique({
         where: { value: accessToken }
       })
-      this.redis.del(genOnlineUserKey(token.id))
     }
-  }
-
-  /**
-   * 禁用多个用户
-   */
-  async multiForbidden(uids: number[]): Promise<void> {
-    if (uids) {
-      const pvs: string[] = []
-      const ts: string[] = []
-      const ps: string[] = []
-      uids.forEach((uid) => {
-        pvs.push(genAuthPVKey(uid))
-        ts.push(genAuthTokenKey(uid))
-        ps.push(genAuthPermKey(uid))
-      })
-      await this.redis.del(pvs)
-      await this.redis.del(ts)
-      await this.redis.del(ps)
-    }
-  }
-
-  /**
-   * 升级用户版本密码
-   */
-  async upgradePasswordV(id: number): Promise<void> {
-    // admin:passwordVersion:${param.id}
-    const v = await this.redis.get(genAuthPVKey(id))
-    if (!isEmpty(v)) await this.redis.set(genAuthPVKey(id), Number.parseInt(v) + 1)
   }
 
   /**

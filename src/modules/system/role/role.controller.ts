@@ -65,7 +65,7 @@ export class RoleController {
   @Perm(permissions.UPDATE)
   async update(@IdParam() id: number, @Body() dto: RoleUpdateDto): Promise<void> {
     await this.roleService.update(id, dto)
-    await this.menuService.refreshOnlineUserPerms()
+    // await this.menuService.refreshOnlineUserPerms()
   }
 
   @Delete(':id')
@@ -76,6 +76,6 @@ export class RoleController {
       throw new BadRequestException('该角色存在关联用户，无法删除')
 
     await this.roleService.delete(id)
-    await this.menuService.refreshOnlineUserPerms()
+    // await this.menuService.refreshOnlineUserPerms()
   }
 }

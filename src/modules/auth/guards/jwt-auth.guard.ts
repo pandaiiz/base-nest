@@ -1,9 +1,7 @@
-import { InjectRedis } from '@liaoliaots/nestjs-redis'
 import { ExecutionContext, Inject, Injectable, UnauthorizedException } from '@nestjs/common'
 import { Reflector } from '@nestjs/core'
 import { AuthGuard } from '@nestjs/passport'
 import { FastifyRequest } from 'fastify'
-import Redis from 'ioredis'
 import { isEmpty, isNil } from 'lodash'
 
 import { ExtractJwt } from 'passport-jwt'
@@ -11,7 +9,6 @@ import { ExtractJwt } from 'passport-jwt'
 import { BusinessException } from '~/common/exceptions/biz.exception'
 import { AppConfig, IAppConfig } from '~/config'
 import { ErrorEnum } from '~/constants/error-code.constant'
-import { genTokenBlacklistKey } from '~/helper/genRedisKey'
 import { AuthService } from '~/modules/auth/auth.service'
 
 import { checkIsDemoMode } from '~/utils'
@@ -28,7 +25,6 @@ export class JwtAuthGuard extends AuthGuard(AuthStrategy.JWT) {
     private reflector: Reflector,
     private authService: AuthService,
     private tokenService: TokenService,
-    @InjectRedis() private readonly redis: Redis,
     @Inject(AppConfig.KEY) private appConfig: IAppConfig
   ) {
     super()
@@ -53,10 +49,6 @@ export class JwtAuthGuard extends AuthGuard(AuthStrategy.JWT) {
     }
 
     const token = this.jwtFromRequestFn(request)
-
-    // 检查 token 是否在黑名单中
-    if (await this.redis.get(genTokenBlacklistKey(token)))
-      throw new BusinessException(ErrorEnum.INVALID_LOGIN)
 
     request.accessToken = token
 
@@ -86,20 +78,20 @@ export class JwtAuthGuard extends AuthGuard(AuthStrategy.JWT) {
         throw new UnauthorizedException('路径参数 uid 与当前 token 登录的用户 uid 不一致')
     }
 
-    const pv = await this.authService.getPasswordVersionByUid(request.user.uid)
+    /*     const pv = await this.authService.getPasswordVersionByUid(request.user.uid)
     if (pv !== `${request.user.pv}`) {
       // 密码版本不一致，登录期间已更改过密码
       throw new BusinessException(ErrorEnum.INVALID_LOGIN)
-    }
+    } */
 
     // 不允许多端登录
     if (!this.appConfig.multiDeviceLogin) {
-      const cacheToken = await this.authService.getTokenByUid(request.user.uid)
+      /*       const cacheToken = await this.authService.getTokenByUid(request.user.uid)
 
       if (token !== cacheToken) {
         // 与redis保存不一致 即二次登录
         throw new BusinessException(ErrorEnum.ACCOUNT_LOGGED_IN_ELSEWHERE)
-      }
+      } */
     }
 
     return result

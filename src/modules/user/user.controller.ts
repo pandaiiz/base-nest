@@ -67,7 +67,7 @@ export class UserController {
   @Perm(permissions.UPDATE)
   async update(@IdParam() id: number, @Body() dto: UserUpdateDto): Promise<void> {
     await this.userService.update(id, dto)
-    await this.menuService.refreshPerms(id)
+    // await this.menuService.refreshPerms(id)
   }
 
   @Delete(':id')
@@ -82,7 +82,6 @@ export class UserController {
     @Param('id', new ParseArrayPipe({ items: Number, separator: ',' })) ids: number[]
   ): Promise<void> {
     await this.userService.delete(ids)
-    await this.userService.multiForbidden(ids)
   }
 
   @Post(':id/password')

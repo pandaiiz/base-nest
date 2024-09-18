@@ -1,13 +1,10 @@
-import { InjectRedis } from '@liaoliaots/nestjs-redis'
 import { Injectable } from '@nestjs/common'
-import Redis from 'ioredis'
 import { concat, isEmpty, uniq } from 'lodash'
 
 import { BusinessException } from '~/common/exceptions/biz.exception'
-import { RedisKeys } from '~/constants/cache.constant'
+// import { RedisKeys } from '~/constants/cache.constant'
 import { ErrorEnum } from '~/constants/error-code.constant'
-import { genAuthPermKey, genAuthTokenKey } from '~/helper/genRedisKey'
-import { SseService } from '~/modules/sse/sse.service'
+// import { genAuthPermKey, genAuthTokenKey } from '~/helper/genRedisKey'
 
 import { deleteEmptyChildren, generatorMenu, generatorRouters } from '~/utils'
 
@@ -20,9 +17,8 @@ import { Menu } from '@prisma/client'
 @Injectable()
 export class MenuService {
   constructor(
-    @InjectRedis() private redis: Redis,
+    // @InjectRedis() private redis: Redis,
     private roleService: RoleService,
-    private sseService: SseService,
     private prisma: PrismaService
   ) {}
 
@@ -53,10 +49,9 @@ export class MenuService {
   }
 
   async create(menu: any): Promise<void> {
-    const result = await this.prisma.menu.create({
+    await this.prisma.menu.create({
       data: menu
     })
-    await this.sseService.noticeClientToUpdateMenusByMenuIds([result.id])
   }
 
   async update(id: number, data: any): Promise<void> {
@@ -64,7 +59,6 @@ export class MenuService {
       where: { id },
       data
     })
-    await this.sseService.noticeClientToUpdateMenusByMenuIds([id])
   }
 
   /**
@@ -227,7 +221,7 @@ export class MenuService {
   /**
    * 刷新指定用户ID的权限
    */
-  async refreshPerms(uid: number): Promise<void> {
+  /*   async refreshPerms(uid: number): Promise<void> {
     const perms = await this.getPermissions(uid)
     const online = await this.redis.get(genAuthTokenKey(uid))
     if (online) {
@@ -235,12 +229,12 @@ export class MenuService {
       await this.redis.set(genAuthPermKey(uid), JSON.stringify(perms))
       await this.sseService.noticeClientToUpdateMenusByUserIds([uid])
     }
-  }
+  } */
 
   /**
    * 刷新所有在线用户的权限
    */
-  async refreshOnlineUserPerms(): Promise<void> {
+  /*   async refreshOnlineUserPerms(): Promise<void> {
     const onlineUserIds: string[] = await this.redis.keys(genAuthTokenKey('*'))
     if (onlineUserIds && onlineUserIds.length > 0) {
       const promiseArr = onlineUserIds
@@ -254,7 +248,7 @@ export class MenuService {
       const uids = await Promise.all(promiseArr)
       this.sseService.noticeClientToUpdateMenusByUserIds(uids)
     }
-  }
+  } */
 
   /**
    * 根据菜单ID查找是否有关联角色

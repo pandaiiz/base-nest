@@ -44,8 +44,8 @@ export class RbacGuard implements CanActivate {
     if (user.roles.includes(Roles.ADMIN)) return true
 
     const allPermissions =
-      (await this.authService.getPermissionsCache(user.uid)) ??
-      (await this.authService.getPermissions(user.uid))
+      // (await this.authService.getPermissionsCache(user.uid)) ??
+      await this.authService.getPermissions(user.uid)
     let canNext = false
 
     // handle permission strings

@@ -67,7 +67,7 @@ export class MenuController {
     await this.menuService.create(dto)
     if (dto.type === 'ACCESS') {
       // 如果是权限发生更改，则刷新所有在线用户的权限
-      await this.menuService.refreshOnlineUserPerms()
+      // await this.menuService.refreshOnlineUserPerms()
     }
   }
 
@@ -82,7 +82,7 @@ export class MenuController {
     await this.menuService.update(id, dto)
     if (dto.type === 'ACCESS') {
       // 如果是权限发生更改，则刷新所有在线用户的权限
-      await this.menuService.refreshOnlineUserPerms()
+      // await this.menuService.refreshOnlineUserPerms()
     }
   }
 
@@ -97,7 +97,7 @@ export class MenuController {
     const childMenus = await this.menuService.findChildMenus(id)
     await this.menuService.deleteMenuItem(flattenDeep([id, childMenus]))
     // 刷新在线用户权限
-    await this.menuService.refreshOnlineUserPerms()
+    // await this.menuService.refreshOnlineUserPerms()
   }
 
   @Get('permissions')

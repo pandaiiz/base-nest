@@ -10,12 +10,12 @@ import { useContainer } from 'class-validator'
 import { AppModule } from './app.module'
 
 import { fastifyApp } from './common/adapters/fastify.adapter'
-import { RedisIoAdapter } from './common/adapters/socket.adapter'
 import { LoggingInterceptor } from './common/interceptors/logging.interceptor'
 import type { ConfigKeyPaths } from './config'
 import { isDev, isMainProcess } from './global/env'
 import { setupSwagger } from './setup-swagger'
 import { LoggerService } from './shared/logger/logger.service'
+import helmet from '@fastify/helmet'
 
 declare const module: any
 
@@ -58,9 +58,8 @@ async function bootstrap() {
     })
   )
 
-  app.useWebSocketAdapter(new RedisIoAdapter(app))
-
   setupSwagger(app, configService)
+  await app.register(helmet)
 
   await app.listen(port, '0.0.0.0', async () => {
     app.useLogger(app.get(LoggerService))

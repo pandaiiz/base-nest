@@ -6,11 +6,7 @@ import { ThrottlerModule } from '@nestjs/throttler'
 
 import { isDev } from '~/global/env'
 
-import { HelperModule } from './helper/helper.module'
 import { LoggerModule } from './logger/logger.module'
-import { MailerModule } from './mailer/mailer.module'
-
-import { RedisModule } from './redis/redis.module'
 
 @Global()
 @Module({
@@ -36,14 +32,8 @@ import { RedisModule } from './redis/redis.module'
       maxListeners: 20,
       verboseMemoryLeak: isDev,
       ignoreErrors: false
-    }),
-    // redis
-    RedisModule,
-    // mailer
-    MailerModule,
-    // helper
-    HelperModule
+    })
   ],
-  exports: [HttpModule, MailerModule, RedisModule, HelperModule]
+  exports: [HttpModule]
 })
 export class SharedModule {}

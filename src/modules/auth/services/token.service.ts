@@ -1,12 +1,9 @@
-import { InjectRedis } from '@liaoliaots/nestjs-redis'
 import { Inject, Injectable } from '@nestjs/common'
 import { JwtService } from '@nestjs/jwt'
 import dayjs from 'dayjs'
 
-import Redis from 'ioredis'
-
 import { ISecurityConfig, SecurityConfig } from '~/config'
-import { genOnlineUserKey } from '~/helper/genRedisKey'
+// import { genOnlineUserKey } from '~/helper/genRedisKey'
 import { RoleService } from '~/modules/system/role/role.service'
 import { generateUUID } from '~/utils'
 
@@ -21,7 +18,7 @@ export class TokenService {
   constructor(
     private jwtService: JwtService,
     private roleService: RoleService,
-    @InjectRedis() private redis: Redis,
+    // @InjectRedis() private redis: Redis,
     @Inject(SecurityConfig.KEY) private securityConfig: ISecurityConfig,
     private prisma: PrismaService
   ) {}
@@ -142,7 +139,7 @@ export class TokenService {
       where: { value }
     })
     if (accessToken) {
-      this.redis.del(genOnlineUserKey(accessToken.id))
+      // this.redis.del(genOnlineUserKey(accessToken.id))
       await this.prisma.accessToken.delete({ where: { id: accessToken.id } })
     }
   }
@@ -159,7 +156,7 @@ export class TokenService {
       }
     })
     if (refreshToken) {
-      if (refreshToken.accessToken) this.redis.del(genOnlineUserKey(refreshToken.accessToken.id))
+      // if (refreshToken.accessToken) this.redis.del(genOnlineUserKey(refreshToken.accessToken.id))
       this.prisma.$transaction([
         this.prisma.refreshToken.delete({ where: { id: refreshToken.id } }),
         this.prisma.accessToken.delete({ where: { id: refreshToken.accessToken.id } })

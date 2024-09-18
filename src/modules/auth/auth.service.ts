@@ -1,19 +1,17 @@
-import { InjectRedis } from '@liaoliaots/nestjs-redis'
 import { Inject, Injectable } from '@nestjs/common'
 
-import Redis from 'ioredis'
 import { isEmpty } from 'lodash'
 
 import { BusinessException } from '~/common/exceptions/biz.exception'
 
 import { AppConfig, IAppConfig, ISecurityConfig, SecurityConfig } from '~/config'
 import { ErrorEnum } from '~/constants/error-code.constant'
-import {
+/* import {
   genAuthPVKey,
   genAuthPermKey,
   genAuthTokenKey,
   genTokenBlacklistKey
-} from '~/helper/genRedisKey'
+} from '~/helper/genRedisKey' */
 
 import { UserService } from '~/modules/user/user.service'
 
@@ -28,7 +26,6 @@ import { TokenService } from './services/token.service'
 @Injectable()
 export class AuthService {
   constructor(
-    @InjectRedis() private readonly redis: Redis,
     private menuService: MenuService,
     private roleService: RoleService,
     private userService: UserService,
@@ -74,19 +71,19 @@ export class AuthService {
     // 包含access_token和refresh_token
     const token = await this.tokenService.generateAccessToken(user.id, roles)
 
-    await this.redis.set(
+    /*     await this.redis.set(
       genAuthTokenKey(user.id),
       token.accessToken,
       'EX',
       this.securityConfig.jwtExprire
-    )
+    ) */
 
     // 设置密码版本号 当密码修改时，版本号+1
-    await this.redis.set(genAuthPVKey(user.id), 1)
+    // await this.redis.set(genAuthPVKey(user.id), 1)
 
     // 设置菜单权限
-    const permissions = await this.menuService.getPermissions(user.id)
-    await this.setPermissionsCache(user.id, permissions)
+    // const permissions = await this.menuService.getPermissions(user.id)
+    // await this.setPermissionsCache(user.id, permissions)
 
     await this.loginLogService.create(user.id, ip, ua)
 
@@ -121,10 +118,10 @@ export class AuthService {
    * 清除登录状态信息
    */
   async clearLoginStatus(user: IAuthUser, accessToken: string): Promise<void> {
-    const exp = user.exp
+    /*    const exp = user.exp
       ? (user.exp - Date.now() / 1000).toFixed(0)
       : this.securityConfig.jwtExprire
-    await this.redis.set(genTokenBlacklistKey(accessToken), accessToken, 'EX', exp)
+    await this.redis.set(genTokenBlacklistKey(accessToken), accessToken, 'EX', exp) */
     if (this.appConfig.multiDeviceLogin) await this.tokenService.removeAccessToken(accessToken)
     else await this.userService.forbidden(user.uid, accessToken)
   }
@@ -143,7 +140,7 @@ export class AuthService {
     return this.menuService.getPermissions(uid)
   }
 
-  async getPermissionsCache(uid: number): Promise<string[]> {
+  /*   async getPermissionsCache(uid: number): Promise<string[]> {
     const permissionString = await this.redis.get(genAuthPermKey(uid))
     return permissionString ? JSON.parse(permissionString) : []
   }
@@ -158,5 +155,5 @@ export class AuthService {
 
   async getTokenByUid(uid: number): Promise<string> {
     return this.redis.get(genAuthTokenKey(uid))
-  }
+  } */
 }

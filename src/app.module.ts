@@ -12,10 +12,7 @@ import { AuthModule } from './modules/auth/auth.module'
 import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard'
 import { RbacGuard } from './modules/auth/guards/rbac.guard'
 import { HealthModule } from './modules/health/health.module'
-import { NetdiskModule } from './modules/netdisk/netdisk.module'
-import { SseModule } from './modules/sse/sse.module'
 import { SystemModule } from './modules/system/system.module'
-import { TasksModule } from './modules/tasks/tasks.module'
 import { ToolsModule } from './modules/tools/tools.module'
 import { RelationshipModule } from '~/modules/relationship/relationship.module'
 import { IoModule } from './modules/io/io.module'
@@ -38,14 +35,9 @@ import { ServeStaticModule } from '@nestjs/serve-static'
     AuthModule,
     SystemModule,
     RelationshipModule,
-    TasksModule.forRoot(),
     ToolsModule,
     HealthModule,
-    SseModule,
-    NetdiskModule,
     IoModule
-    // biz
-    // end biz
   ],
   providers: [
     { provide: APP_FILTER, useClass: AllExceptionsFilter },
