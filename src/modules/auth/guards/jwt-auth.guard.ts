@@ -70,30 +70,6 @@ export class JwtAuthGuard extends AuthGuard(AuthStrategy.JWT) {
       if (!isValid) throw new BusinessException(ErrorEnum.INVALID_LOGIN)
     }
 
-    // SSE 请求
-    if (isSse) {
-      const { uid } = request.params as Record<string, any>
-
-      if (Number(uid) !== request.user.uid)
-        throw new UnauthorizedException('路径参数 uid 与当前 token 登录的用户 uid 不一致')
-    }
-
-    /*     const pv = await this.authService.getPasswordVersionByUid(request.user.uid)
-    if (pv !== `${request.user.pv}`) {
-      // 密码版本不一致，登录期间已更改过密码
-      throw new BusinessException(ErrorEnum.INVALID_LOGIN)
-    } */
-
-    // 不允许多端登录
-    if (!this.appConfig.multiDeviceLogin) {
-      /*       const cacheToken = await this.authService.getTokenByUid(request.user.uid)
-
-      if (token !== cacheToken) {
-        // 与redis保存不一致 即二次登录
-        throw new BusinessException(ErrorEnum.ACCOUNT_LOGGED_IN_ELSEWHERE)
-      } */
-    }
-
     return result
   }
 

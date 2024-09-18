@@ -3,7 +3,7 @@ import {
   ExecutionContext,
   Injectable,
   NestInterceptor,
-  RequestTimeoutException,
+  RequestTimeoutException
 } from '@nestjs/common'
 import { Observable, TimeoutError, throwError } from 'rxjs'
 import { catchError, timeout } from 'rxjs/operators'
@@ -16,11 +16,11 @@ export class TimeoutInterceptor implements NestInterceptor {
     return next.handle().pipe(
       timeout(this.time),
       catchError((err) => {
-        if (err instanceof TimeoutError)
-          return throwError(new RequestTimeoutException('请求超时'))
-
-        return throwError(err)
-      }),
+        if (err instanceof TimeoutError) {
+          return throwError(() => new RequestTimeoutException('请求超时'))
+        }
+        return throwError(() => err)
+      })
     )
   }
 }

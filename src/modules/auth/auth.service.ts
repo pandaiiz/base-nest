@@ -118,12 +118,7 @@ export class AuthService {
    * 清除登录状态信息
    */
   async clearLoginStatus(user: IAuthUser, accessToken: string): Promise<void> {
-    /*    const exp = user.exp
-      ? (user.exp - Date.now() / 1000).toFixed(0)
-      : this.securityConfig.jwtExprire
-    await this.redis.set(genTokenBlacklistKey(accessToken), accessToken, 'EX', exp) */
-    if (this.appConfig.multiDeviceLogin) await this.tokenService.removeAccessToken(accessToken)
-    else await this.userService.forbidden(user.uid, accessToken)
+    this.tokenService.removeAccessToken(accessToken)
   }
 
   /**

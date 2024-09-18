@@ -12,9 +12,9 @@ export class BusinessException extends HttpException {
       super(
         HttpException.createBody({
           code: RESPONSE_SUCCESS_CODE,
-          message: error,
+          message: error
         }),
-        HttpStatus.OK,
+        HttpStatus.OK
       )
       this.errorCode = RESPONSE_SUCCESS_CODE
       return
@@ -24,9 +24,9 @@ export class BusinessException extends HttpException {
     super(
       HttpException.createBody({
         code,
-        message,
+        message
       }),
-      HttpStatus.OK,
+      HttpStatus.OK
     )
 
     this.errorCode = Number(code)

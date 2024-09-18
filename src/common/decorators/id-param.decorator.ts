@@ -6,8 +6,7 @@ export function IdParam() {
     new ParseIntPipe({
       errorHttpStatusCode: HttpStatus.NOT_ACCEPTABLE,
       exceptionFactory: (_error) => {
-        console.log(_error)
-        throw new NotAcceptableException('id 格式不正确')
+        throw new NotAcceptableException(`id 格式不正确：${_error}`)
       }
     })
   )

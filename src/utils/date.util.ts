@@ -6,14 +6,14 @@ const DATE_FORMAT = 'YYYY-MM-DD'
 
 export function formatToDateTime(
   date: string | number | Date | dayjs.Dayjs | null | undefined = undefined,
-  format = DATE_TIME_FORMAT,
+  format = DATE_TIME_FORMAT
 ): string {
   return dayjs(date).format(format)
 }
 
 export function formatToDate(
   date: string | number | Date | dayjs.Dayjs | null | undefined = undefined,
-  format = DATE_FORMAT,
+  format = DATE_FORMAT
 ): string {
   return dayjs(date).format(format)
 }

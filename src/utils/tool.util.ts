@@ -1,13 +1,5 @@
 import { customAlphabet, nanoid } from 'nanoid'
 
-import { md5 } from './crypto.util'
-
-export function getAvatar(mail: string | undefined) {
-  if (!mail) return ''
-
-  return `https://cravatar.cn/avatar/${md5(mail)}?d=retro`
-}
-
 export function generateUUID(size: number = 21): string {
   return nanoid(size)
 }
