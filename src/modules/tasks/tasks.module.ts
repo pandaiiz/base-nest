@@ -21,7 +21,7 @@ function createAliasProviders(): ExistingProvider[] {
   for (const p of providers) {
     aliasProviders.push({
       provide: p.name,
-      useExisting: p,
+      useExisting: p
     })
   }
   return aliasProviders
@@ -40,7 +40,7 @@ export class TasksModule {
       module: TasksModule,
       imports: [SystemModule, LogModule],
       providers: [...providers, ...aliasProviders],
-      exports: aliasProviders,
+      exports: aliasProviders
     }
   }
 }
