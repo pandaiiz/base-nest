@@ -5,7 +5,6 @@ import { Reflector } from '@nestjs/core'
 import type { FastifyRequest } from 'fastify'
 
 import { hashString } from '~/utils'
-import { getIp } from '~/utils/ip.util'
 import { getRedisKey } from '~/utils/redis.util'
 
 import { HTTP_IDEMPOTENCE_KEY, HTTP_IDEMPOTENCE_OPTIONS } from '../decorators/idempotence.decorator'
@@ -82,11 +81,10 @@ export class IdempotenceInterceptor implements NestInterceptor {
       obj.uuid = uuid
     } else {
       const ua = headers['user-agent']
-      const ip = getIp(req)
 
-      if (!ua && !ip) return undefined
+      if (!ua) return undefined
 
-      Object.assign(obj, { ua, ip })
+      Object.assign(obj, { ua })
     }
 
     return hashString(JSON.stringify(obj))

@@ -1,8 +1,7 @@
-import { Body, Controller, Headers, Post, UseGuards } from '@nestjs/common'
+import { Body, Controller, Post, UseGuards } from '@nestjs/common'
 import { ApiOperation, ApiTags } from '@nestjs/swagger'
 
 import { ApiResult } from '~/common/decorators/api-result.decorator'
-import { Ip } from '~/common/decorators/http.decorator'
 
 import { UserService } from '../user/user.service'
 
@@ -25,12 +24,8 @@ export class AuthController {
   @Post('login')
   @ApiOperation({ summary: '登录' })
   @ApiResult({ type: LoginToken })
-  async login(
-    @Body() dto: LoginDto,
-    @Ip() ip: string,
-    @Headers('user-agent') ua: string
-  ): Promise<LoginToken> {
-    const token = await this.authService.login(dto.username, dto.password, ip, ua)
+  async login(@Body() dto: LoginDto): Promise<LoginToken> {
+    const token = await this.authService.login(dto.username, dto.password)
     return { token }
   }
 

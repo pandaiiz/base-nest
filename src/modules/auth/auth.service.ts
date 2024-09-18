@@ -56,7 +56,7 @@ export class AuthService {
    * 获取登录JWT
    * 返回null则账号密码有误，不存在该用户
    */
-  async login(username: string, password: string, ip: string, ua: string): Promise<string> {
+  async login(username: string, password: string): Promise<string> {
     const user = await this.userService.findUserByUserName(username)
     if (isEmpty(user)) throw new BusinessException(ErrorEnum.INVALID_USERNAME_PASSWORD)
 
@@ -85,7 +85,7 @@ export class AuthService {
     // const permissions = await this.menuService.getPermissions(user.id)
     // await this.setPermissionsCache(user.id, permissions)
 
-    await this.loginLogService.create(user.id, ip, ua)
+    await this.loginLogService.create(user.id)
 
     return token.accessToken
   }
@@ -101,8 +101,8 @@ export class AuthService {
       throw new BusinessException(ErrorEnum.INVALID_USERNAME_PASSWORD)
   }
 
-  async loginLog(uid: number, ip: string, ua: string) {
-    await this.loginLogService.create(uid, ip, ua)
+  async loginLog(uid: number) {
+    await this.loginLogService.create(uid)
   }
 
   /**

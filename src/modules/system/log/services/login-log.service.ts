@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common'
 // import UAParser from 'ua-parser-js'
-import { getIpAddress } from '~/utils/ip.util'
 
 // import { LoginLogQueryDto } from '../dto/log.dto'
 // import { LoginLogInfo } from '../models/log.model'
@@ -24,14 +23,10 @@ import { PrismaService } from 'nestjs-prisma'
 export class LoginLogService {
   constructor(private prisma: PrismaService) {}
 
-  async create(uid: number, ip: string, ua: string): Promise<void> {
+  async create(uid: number): Promise<void> {
     try {
-      const address = await getIpAddress(ip)
       await this.prisma.loginLog.create({
         data: {
-          ip,
-          ua,
-          address,
           user: { connect: { id: uid } }
         }
       })
